@@ -84,3 +84,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.bd {
+  border: 1px solid #000;
+}

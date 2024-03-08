@@ -41,7 +41,7 @@ const onRefresh = () => {
 
 </script>
 <template>
-  <main class="container h-full overflow-y-hidden">
+  <main class="h-full overflow-y-hidden">
     <van-config-provider :theme-vars="themeVars">
       <van-nav-bar fixed :border="true" v-if="IsShowNavbar" left-text="返回" left-arrow>
         <template #right>
@@ -57,7 +57,7 @@ const onRefresh = () => {
       <BlankSpaceBox :height="themeVars.navBarHeight" />
 
       <!-- login , 及 mainlayout 都先在此显示 -->
-      <div ref="scrollRef" class="overflow-y-auto">
+      <div ref="scrollRef">
         <van-pull-refresh :disabled="IsCanRefresh" v-model="refreshLoading" @refresh="onRefresh">
           <RouterView />
         </van-pull-refresh>

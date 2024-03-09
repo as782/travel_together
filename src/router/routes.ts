@@ -94,4 +94,20 @@ const mainRoutes: RouteRecordRaw[] = [
     ]
   }
 ]
-export const routes: RouteRecordRaw[] = [...loginRoutes,...mainRoutes]
+
+const pageRoutes: RouteRecordRaw[] = [
+  {
+    path: '/groupDetail/:card_id',
+    name: 'groupDetail',
+    meta: {
+      title: '组队详情',
+      keepAlive: false,
+      hideNavbar: true,
+      tabBar: false,
+      noToken: true,
+      refresh: true
+    },
+    component: () => import('../views/groupdetail/GroupDetailPage.vue')
+  }
+]
+export const routes: RouteRecordRaw[] = [...loginRoutes, ...mainRoutes,...pageRoutes]

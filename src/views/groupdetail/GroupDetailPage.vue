@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import type { SlideInfo } from '@/components/carousel/types';
 import { showImagePreview } from 'vant';
+import type { SlideInfo } from '@/components/carousel/types';
+import type { CommentState, CommentDetail } from '@/components/commentplane/types';
+import CommentPlance from '@/components/commentplane/CommentPlane.vue';
+
 const router = useRouter();
 //   img swiper
 const imgList = reactive<SlideInfo[]>([
@@ -89,25 +92,24 @@ const ensureShow = ref(false);
 const showPopup = () => {
     ensureShow.value = true;
 }
-interface Comment {
-    id: string,
-    user_name: string,
-    avator: string,
-    date: string,
-    content: string
-}
+
+// handle comment
 const mycomment = ref(''); // 我的评论
-const commentList = reactive<Comment[]>([])
+const commentList = reactive<CommentDetail[]>([])
 for (let i = 0; i < 10; i++) {
     commentList.push({
-        id: `${i + Math.random()}`,
-        user_name: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-        avator: 'https://img.yzcdn.cn/vant/cat.jpeg',
-        date: new Date().getTime().toFixed(2).toString().substring(0, 2),
+        id: i + Math.random(),
+        user: {
+            id: i + Math.random(),
+            nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
+            avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
+
+        },
+        createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
         content: '星宿老仙派别，无量剑派？'
     })
 }
-const commentState = reactive({
+const commentState = reactive<CommentState>({
     loading: false,
     finished: false,
     error: false,
@@ -116,10 +118,14 @@ const handleCommentOnLoad = () => {
     setTimeout(() => {
         for (let i = 0; i < 10; i++) {
             commentList.push({
-                id: `${i + Math.random().toFixed(2)}`,
-                user_name: `平台用户${i % 2 + Math.random() * 10}`,
-                avator: 'https://img.yzcdn.cn/vant/cat.jpeg',
-                date: new Date().getTime().toFixed(2).toString().substring(0, 2),
+                id: i + Math.random(),
+                user: {
+                    id: i + Math.random(),
+                    nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
+                    avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
+
+                },
+                createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
                 content: '星宿老仙派别，无量剑派？'
             });
         }
@@ -241,26 +247,9 @@ const handleCommentOnLoad = () => {
                     <van-field v-model="mycomment" class=" rounded-xl   bg-cyan-300 " placeholder="喜欢就评论给队长一点支持！" />
                 </div>
 
-                <div class="comments-area">
-                    <van-list v-model:loading="commentState.loading" :finished="commentState.finished"
-                        finished-text="没有更多了" v-model:error="commentState.error" error-text="请求失败，点击重新加载"
-                        @load="handleCommentOnLoad">
-                        <div class="comment flex justify-center items-center my-3" v-for="comment in commentList "
-                            :key="comment.id">
-                            <van-image round class="flex-none w-10 h-10   aspect-square mx-2" :src="comment.avator" />
-                            <div class="comment-right flex-1 ml-3">
-                                <div class="content-top flex items-center  ">
-                                    <h6 class="text-sm text-gray-500 ">{{ comment.user_name }}</h6>
-                                    <span class="text-xs text-gray-500 mx-2">{{ comment.date }}天前</span>
-                                </div>
-                                <p class="text-sm font-normal">
-                                    {{ comment.content }}
-                                </p>
-                            </div>
-                        </div>
-                    </van-list>
-
-                </div>
+                <CommentPlance v-model:loading="commentState.loading" v-model:finished="commentState.finished"
+                    v-model:error="commentState.error" :comment-list="commentList"
+                    :handle-comment-on-load="handleCommentOnLoad" />
             </div>
 
             <BlankSpaceBox width="100%" height="50px" />

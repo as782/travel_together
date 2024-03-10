@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
+ 
 const route = useRoute();
 // 定义枚举类型
 type TabBarItem = 'home' | 'moment' | 'message' | 'mine';
@@ -42,7 +43,7 @@ const onRefresh = () => {
 </script>
 
 <template>
-    <main class="overflow-y-hidden">
+    <main class="overflow-y-hidden bg-slate-200">
         <van-config-provider :theme-vars="themeVars">
             <van-nav-bar fixed :z-index="999" v-if="IsShowNavbar" left-text="返回" left-arrow>
                 <template #right>
@@ -55,7 +56,7 @@ const onRefresh = () => {
                 </template>
             </van-nav-bar>
 
-            <BlankSpaceBox :height="themeVars.navBarHeight" />
+            <BlankSpaceBox v-if="IsShowNavbar" :height="themeVars.navBarHeight" />
 
             <!-- login , 及 mainlayout 都先在此显示 -->
             <div ref="scrollRef">
@@ -72,7 +73,7 @@ const onRefresh = () => {
                 </van-pull-refresh>
             </div>
 
-            <BlankSpaceBox :height="themeVars.tabBarHeight" />
+            <BlankSpaceBox v-if="IsShowTabbar" :height="themeVars.tabBarHeight" />
 
             <van-tabbar v-if="IsShowTabbar" v-model="tabActive">
                 <van-tabbar-item to="/home" name="home" icon="home-o">首页</van-tabbar-item>

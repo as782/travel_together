@@ -1,7 +1,7 @@
 <template>
-    <main>
+    <main class="bg-white">
         <EffectSwiper :slideList="imgList"></EffectSwiper>
-        <van-tabs v-model:active="vanTabActive" class="mt-2" sticky :offset-top="50">
+        <van-tabs v-model:active="vanTabActive" class="mt-2 "  sticky :offset-top="50">
             <van-tab v-for="item in  categoryList " :key="item.name" title-inactive-color="#ddd"
                 title-active-color="#000">
                 <template #title>

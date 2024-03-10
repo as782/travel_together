@@ -9,6 +9,6 @@ declare module 'vue-router' {
     tabBar?: boolean // 是否显示底部导航
     keepAlive?: boolean // 是否缓存
     refresh?: boolean // 开启下拉刷新
-    noToken?: true // 无需登录验证的界面
+    noToken?: boolean // 无需登录验证的界面
   }
 }

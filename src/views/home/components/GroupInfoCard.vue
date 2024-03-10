@@ -6,7 +6,7 @@ interface IProps {
 const { cardData } = defineProps<IProps>()
 </script>
 <template>
-    <div class="group-info-card flex flex-col px-2 py-3 rounded-lg shadow shadow-red-200">
+    <div class="group-info-card flex flex-col px-2 py-3 rounded-lg shadow shadow-red-200 bg-white">
         <div class="card-top flex items-center">
             <van-image round class="w-8 aspect-square mx-2" :src="cardData.userInfo.avatar" />
             <span class="w-3/5 h-full  mx-1  truncate text-sm text-nowrap text-gray-500 font-bold">

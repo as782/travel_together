@@ -45,7 +45,7 @@ const mainRoutes: RouteRecordRaw[] = [
         meta: {
           title: '首页',
           keepAlive: true,
-          hideNavbar: false,
+          hideNavbar: true,
           tabBar: true,
           noToken: true,
           refresh: true
@@ -58,7 +58,7 @@ const mainRoutes: RouteRecordRaw[] = [
         meta: {
           title: '圈子',
           keepAlive: true,
-          hideNavbar: false,
+          hideNavbar: true,
           tabBar: true,
           noToken: true,
           refresh: true
@@ -104,10 +104,23 @@ const pageRoutes: RouteRecordRaw[] = [
       keepAlive: false,
       hideNavbar: true,
       tabBar: false,
-      noToken: true,
+      noToken: false,
       refresh: true
     },
     component: () => import('../views/groupdetail/GroupDetailPage.vue')
+  },
+  {
+    path: '/momentDetail/:id',
+    name: 'momentDetail',
+    meta: {
+      title: '动态详情',
+      keepAlive: false,
+      hideNavbar: true,
+      tabBar: false,
+      noToken: false,
+      refresh: true
+    },
+    component: () => import('../views/momentdetail/MomentDetailPage.vue')
   }
 ]
-export const routes: RouteRecordRaw[] = [...loginRoutes, ...mainRoutes,...pageRoutes]
+export const routes: RouteRecordRaw[] = [...loginRoutes, ...mainRoutes, ...pageRoutes]

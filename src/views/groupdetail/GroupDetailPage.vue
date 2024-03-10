@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { SlideInfo } from '@/components/carousel/types';
 import { showImagePreview } from 'vant';
-
+const router = useRouter();
+//   img swiper
 const imgList = reactive<SlideInfo[]>([
     {
         imgUrl: 'https://swiperjs.com/demos/images/nature-1.jpg',
@@ -58,12 +60,77 @@ const handleImgclick = (index: number) => {
 
 }
 
+// handle top 
+const topState = reactive({
+    isShow: false,
+    shareOptions: [
+        [
+            { name: '微信', icon: 'wechat' },
+            { name: '朋友圈', icon: 'wechat-moments' },
+            { name: '微博', icon: 'weibo' },
+            { name: 'QQ', icon: 'qq' },
+        ],
+        [
+            { name: '复制链接', icon: 'link' },
+            { name: '分享海报', icon: 'poster' },
+            { name: '二维码', icon: 'qrcode' },
+            { name: '小程序码', icon: 'weapp-qrcode' },
+        ],
+    ]
+})
+const handleTopGoback = () => {
+    router.back();
+}
+const handleTopShare = () => {
+    topState.isShow = true;
+}
+
 const ensureShow = ref(false);
 const showPopup = () => {
     ensureShow.value = true;
 }
-
+interface Comment {
+    id: string,
+    user_name: string,
+    avator: string,
+    date: string,
+    content: string
+}
 const mycomment = ref(''); // 我的评论
+const commentList = reactive<Comment[]>([])
+for (let i = 0; i < 10; i++) {
+    commentList.push({
+        id: `${i + Math.random()}`,
+        user_name: `平台用户${i % 2 + Math.random().toFixed(2)}`,
+        avator: 'https://img.yzcdn.cn/vant/cat.jpeg',
+        date: new Date().getTime().toFixed(2).toString().substring(0, 2),
+        content: '星宿老仙派别，无量剑派？'
+    })
+}
+const commentState = reactive({
+    loading: false,
+    finished: false,
+    error: false,
+})
+const handleCommentOnLoad = () => {
+    setTimeout(() => {
+        for (let i = 0; i < 10; i++) {
+            commentList.push({
+                id: `${i + Math.random().toFixed(2)}`,
+                user_name: `平台用户${i % 2 + Math.random() * 10}`,
+                avator: 'https://img.yzcdn.cn/vant/cat.jpeg',
+                date: new Date().getTime().toFixed(2).toString().substring(0, 2),
+                content: '星宿老仙派别，无量剑派？'
+            });
+        }
+
+        commentState.loading = false;
+
+        if (commentList.length > 40) {
+            commentState.finished = true;
+        }
+    }, 1000)
+}
 </script>
 
 <template>
@@ -72,10 +139,11 @@ const mycomment = ref(''); // 我的评论
             <div class="fixed z-50 top-0 w-full h-10 py-2">
                 <div class="flex justify-between">
                     <!-- 返回图标 -->
-                    <van-icon class="mx-2" color="#d7d7d799" name="arrow-left" size="30" />
+                    <van-icon @click="handleTopGoback" class="mx-2" color="#d7d7d799" name="arrow-left" size="30" />
                     <!-- 分享图标 -->
-                    <van-icon class="mx-2" color="#d7d7d799" name="share" size="30" />
+                    <van-icon @click="handleTopShare" class="mx-2" color="#d7d7d799" name="share" size="30" />
                 </div>
+                <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
             </div>
             <van-swipe :autoplay="3000" lazy-render>
                 <van-swipe-item @click="() => handleImgclick(index)" v-for="(image, index) in imgList" :key="image.id">
@@ -159,7 +227,13 @@ const mycomment = ref(''); // 我的评论
                     </van-list>
                 </div>
             </div>
-
+            <div class="plan w-full p-2 mt-3 bg-white">
+                <h4 class="text-gray-500">行程安排</h4>
+                <div class="img-content">
+                    <img src="https://img.yzcdn.cn/vant/cat.jpeg" alt="">
+                </div>
+            </div>
+            <!-- 评论区 -->
             <div class="w-full p-2 mt-3 bg-white">
                 <h4 class="text-gray-500">评论 （12）</h4>
                 <div class="active-comment flex justify-center items-center">
@@ -168,21 +242,24 @@ const mycomment = ref(''); // 我的评论
                 </div>
 
                 <div class="comments-area">
-                    <div class="comment flex justify-center items-center my-3" v-for="i in 10 " :key="i">
-                        <van-image round class="flex-none w-10 h-10   aspect-square mx-2"
-                            src="https://img.yzcdn.cn/vant/cat.jpeg" />
-                        <div class="comment-right flex-1 ml-3">
-                            <div class="content-top flex items-center  ">
-                                <h6 class="text-sm text-gray-500 ">华友从开日</h6>
-                                <span class="text-xs text-gray-500 mx-2">2天前</span>
+                    <van-list v-model:loading="commentState.loading" :finished="commentState.finished"
+                        finished-text="没有更多了" v-model:error="commentState.error" error-text="请求失败，点击重新加载"
+                        @load="handleCommentOnLoad">
+                        <div class="comment flex justify-center items-center my-3" v-for="comment in commentList "
+                            :key="comment.id">
+                            <van-image round class="flex-none w-10 h-10   aspect-square mx-2" :src="comment.avator" />
+                            <div class="comment-right flex-1 ml-3">
+                                <div class="content-top flex items-center  ">
+                                    <h6 class="text-sm text-gray-500 ">{{ comment.user_name }}</h6>
+                                    <span class="text-xs text-gray-500 mx-2">{{ comment.date }}天前</span>
+                                </div>
+                                <p class="text-sm font-normal">
+                                    {{ comment.content }}
+                                </p>
                             </div>
-                            <p class="text-sm font-normal">
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo
-                                hic, eius
-                                sit adipisci culpa impedit quis rem minima voluptate nesciunt?
-                            </p>
                         </div>
-                    </div>
+                    </van-list>
+
                 </div>
             </div>
 

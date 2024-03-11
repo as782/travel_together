@@ -70,7 +70,7 @@ const onRefresh = () => {
 
             <!-- login , 及 mainlayout 都先在此显示 -->
             <div ref="scrollRef">
-                <van-pull-refresh :disabled="IsCanRefresh" v-model="refreshLoading" @refresh="onRefresh">
+                <van-pull-refresh :disabled="!IsCanRefresh" v-model="refreshLoading" @refresh="onRefresh">
                     <RouterView>
                         <template #default="{ Component }">
                             <keep-alive>

@@ -84,7 +84,7 @@ const mainRoutes: RouteRecordRaw[] = [
         meta: {
           title: '',
           keepAlive: true,
-          hideNavbar: false,
+          hideNavbar: true,
           tabBar: true,
           noToken: true,
           refresh: true

@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
- 
+
 const route = useRoute();
 // 定义枚举类型
 type TabBarItem = 'home' | 'moment' | 'message' | 'mine';
@@ -45,14 +45,24 @@ const onRefresh = () => {
 <template>
     <main class="overflow-y-hidden bg-slate-200">
         <van-config-provider :theme-vars="themeVars">
-            <van-nav-bar fixed :z-index="999" v-if="IsShowNavbar" left-text="返回" left-arrow>
-                <template #right>
-                    <van-icon name="search" size="18" />
-                </template>
+            <van-nav-bar fixed :z-index="999" v-if="IsShowNavbar">
                 <template #title>
-                    <span>
+                    <span v-if="route.name !== 'home'">
                         {{ IsShowTitle ? route.meta?.title : '' }}
                     </span>
+                </template>
+                <template #left>
+                    <div class="flex items-center " v-if="route.name == 'home'">
+                        <img class="w-10" src="../assets/logo.svg" alt="">
+                        <span class="text-xl font-serif font-medium italic">一起旅行</span>
+                    </div>
+                </template>
+                <template #right>
+                    <div v-if="route.name == 'home'">
+                        <van-config-provider :theme-vars="{ searchPadding: 0 }">
+                            <van-search shape="round" />
+                        </van-config-provider>
+                    </div>
                 </template>
             </van-nav-bar>
 

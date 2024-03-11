@@ -45,7 +45,7 @@ const mainRoutes: RouteRecordRaw[] = [
         meta: {
           title: '首页',
           keepAlive: true,
-          hideNavbar: true,
+          hideNavbar: false,
           tabBar: true,
           noToken: true,
           refresh: true
@@ -115,12 +115,38 @@ const pageRoutes: RouteRecordRaw[] = [
     meta: {
       title: '动态详情',
       keepAlive: false,
-      hideNavbar: true,
+      hideNavbar: false,
       tabBar: false,
       noToken: false,
       refresh: true
     },
     component: () => import('../views/momentdetail/MomentDetailPage.vue')
+  },
+  {
+    path: '/chat/:id',
+    name: 'chat',
+    meta: {
+      title: '聊天框',
+      keepAlive: false,
+      hideNavbar: false,
+      tabBar: true,
+      noToken: false,
+      refresh: true
+    },
+    component: () => import('../views/chat/ChatPage.vue')
+  },
+  {
+    path: '/sysinfo',
+    name: 'sysinfo',
+    meta: {
+      title: '系统动态',
+      keepAlive: true,
+      hideNavbar: false,
+      tabBar: false,
+      noToken: false,
+      refresh: true
+    },
+    component: () => import('../views/sysinfo/SystemInfoPage.vue')
   }
 ]
 export const routes: RouteRecordRaw[] = [...loginRoutes, ...mainRoutes, ...pageRoutes]

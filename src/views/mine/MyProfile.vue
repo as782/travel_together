@@ -31,7 +31,7 @@ const cardShare = reactive({
     shareOptions: shareOptions
 })
 const handleConnectService = () => {
-    router.back();
+
 }
 const handleTopShare = () => {
     topState.isShow = true;
@@ -150,7 +150,7 @@ const handleClickMomment = (id: number) => {
                 alt="backgrond img">
         </div>
 
-        <div class="down-content p-2 -translate-y-12 ">
+        <div class="down-content p-4 -translate-y-12 ">
             <div class="card-profile rounded-lg  bg-white">
                 <div class="profile-top flex flex-row-reverse  w-full p-2">
                     <div
@@ -203,15 +203,17 @@ const handleClickMomment = (id: number) => {
 
             <!-- 我的组队，设置，个人资料 卡片 -->
             <div class="flex justify-around p-2 my-4 rounded-lg bg-white ">
-                <div class="flex flex-col justify-center items-center w-20 rounded-sm">
+                <div @click="router.push('/mygroups')"
+                    class="flex flex-col justify-center items-center w-20 rounded-sm">
                     <van-icon name="friends-o" size="30"></van-icon>
                     <span class="text-sm text-gray-500"> 我的组队</span>
                 </div>
-                <div class="flex flex-col justify-center items-center w-20 rounded-sm">
+                <div @click="router.push('/setting')" class="flex flex-col justify-center items-center w-20 rounded-sm">
                     <van-icon name="setting-o" size="30" />
                     <span class="text-sm text-gray-500"> 系统设置</span>
                 </div>
-                <div class="flex flex-col justify-center items-center w-20 rounded-sm">
+                <div @click="router.push('/editprofile')"
+                    class="flex flex-col justify-center items-center w-20 rounded-sm">
                     <van-icon name="records-o" size="30" />
                     <span class="text-sm text-gray-500">个人资料</span>
                 </div>

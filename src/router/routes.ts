@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/layout/AppLayout.vue'
-
+import SimpleLayout from '@/layout/SimpleLayout.vue'
 const loginRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -147,6 +147,50 @@ const pageRoutes: RouteRecordRaw[] = [
       refresh: true
     },
     component: () => import('../views/sysinfo/SystemInfoPage.vue')
+  },
+  {
+    path: '/editprofile',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'editprofile',
+        meta: {
+          title: '个人信息',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/editprofile/EditProfilePage.vue')
+      }
+    ]
+  },
+  {
+    path: '/setting',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'setting',
+        meta: {
+          title: '设置',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/settingpage/SettingPage.vue')
+      }
+    ]
   }
 ]
-export const routes: RouteRecordRaw[] = [...loginRoutes, ...mainRoutes, ...pageRoutes]
+export const routes: RouteRecordRaw[] = [
+  ...loginRoutes,
+  ...mainRoutes,
+  ...pageRoutes,
+  {
+    // error page
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/error/404Page.vue')
+  }
+]

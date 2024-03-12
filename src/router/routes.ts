@@ -181,6 +181,58 @@ const pageRoutes: RouteRecordRaw[] = [
         component: () => import('../views/settingpage/SettingPage.vue')
       }
     ]
+  },
+  {
+    path: '/fans',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'fans',
+        meta: {
+          title: '粉丝',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/somelist/listfans/FansListPage.vue')
+      }
+    ]
+  },
+
+  {
+    path: '/like',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'like',
+        meta: {
+          title: '喜欢',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/somelist/listoflike/LikeListPage.vue')
+      }
+    ]
+  },
+  {
+    path: '/follow',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'follow',
+        meta: {
+          title: '关注',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/somelist/listfollow/FollowListPage.vue')
+      }
+    ]
   }
 ]
 export const routes: RouteRecordRaw[] = [

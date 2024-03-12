@@ -184,17 +184,17 @@ const handleClickMomment = (id: number) => {
                     <div class="flex justify-between items-center ">
                         <span class="flex-1 text-xs">一起旅行了111天</span>
                         <div class="flex flex-none items-center ">
-                            <div class="flex flex-col items-center flex-none mx-2">
+                            <div @click="router.push('/follow')" class="flex flex-col items-center flex-none mx-2">
                                 <div class="text-sm">0</div>
                                 <div class="text-xs">关注</div>
                             </div>
-                            <div class="flex flex-col items-center flex-none mx-2">
+                            <div @click="router.push('/fans')" class="flex flex-col items-center flex-none mx-2">
                                 <div class="text-sm">0</div>
                                 <div class="text-xs">粉丝</div>
                             </div>
-                            <div class="flex flex-col items-center flex-none mx-2">
+                            <div @click="router.push('/like')" class="flex flex-col items-center flex-none mx-2">
                                 <div class="text-sm">0</div>
-                                <div class="text-xs">获赞</div>
+                                <div class="text-xs">喜欢</div>
                             </div>
                         </div>
                     </div>

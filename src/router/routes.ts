@@ -90,6 +90,19 @@ const mainRoutes: RouteRecordRaw[] = [
           refresh: true
         },
         component: () => import('../views/mine/MyProfile.vue')
+      },
+      {
+        path: '/user/:id',
+        name: 'user',
+        meta: {
+          title: '用户页',
+          keepAlive: false,
+          hideNavbar: true,
+          tabBar: false,
+          noToken: true,
+          refresh: true
+        },
+        component: () => import('../views/otherprofie/OtherProfile.vue')
       }
     ]
   }

@@ -5,7 +5,7 @@ import MomentsActivityCard from '@/components/momentsactivitycard/MomentsActivit
 import { useRouter } from 'vue-router';
 import CommentPlane from '@/components/commentplane/CommentPlane.vue';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
-import GroupInfoCard from '@/views/home/components/GroupInfoCard.vue';
+import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 const router = useRouter();
 
 const activeName = ref('group');

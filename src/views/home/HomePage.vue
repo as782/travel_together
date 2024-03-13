@@ -23,9 +23,9 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import EffectSwiper from '@/components/carousel/EffectSwiper.vue';
-import { GroupInfoCard } from './components/index';
+import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 import type { SlideInfo } from '@/components/carousel/types';
-import type { CardInfo } from './types';
+import type { CardInfo } from '@/components/groupcard/types';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 const imgList = reactive<SlideInfo[]>([
@@ -1040,4 +1040,4 @@ const handleGotoDetal = (card_id: number) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped></style>../../components/groupcard/types

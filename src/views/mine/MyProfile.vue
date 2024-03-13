@@ -2,8 +2,8 @@
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
-import PublishCard from './components/PublishCard.vue';
-import type { PublishCardData } from './components/types';
+import PublishCard from '@/components/publishcard/PublishCard.vue';
+import type { PublishCardData } from '@/components/publishcard/types';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
 
 const router = useRouter();

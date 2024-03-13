@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CardInfo } from '../types/index';
+import type { CardInfo } from './types';
 interface IProps {
     cardData: CardInfo
 }
@@ -51,6 +51,4 @@ const { cardData } = defineProps<IProps>()
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

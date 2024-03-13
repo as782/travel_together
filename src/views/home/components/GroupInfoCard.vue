@@ -13,13 +13,13 @@ const { cardData } = defineProps<IProps>()
                 {{ cardData.userInfo.name }}
             </span>
         </div>
-        <div class="card-center rounded-lg my-1">
-            <!-- 宣传image -->
-            <img class="w-full aspect-auto rounded-lg" :src="cardData.cover_imgUrl" alt="">
-        </div>
-        <div class="card-bottom">
+        <div class="flex flex-col">
+            <div class="card-center rounded-lg my-1">
+                <!-- 宣传image -->
+                <img class="w-full aspect-auto rounded-lg" :src="cardData.cover_imgUrl" alt="">
+            </div>
             <div class="active-desc w-full ">
-                <p class="text-sm font-bold   ">
+                <p class="text-sm  ">
                     {{ cardData.desc }}
                 </p>
                 <div class="condition flex flex-col my-2">
@@ -35,6 +35,8 @@ const { cardData } = defineProps<IProps>()
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="card-bottom">
             <!-- who like this card -->
             <div class="fans-list flex justify-end items-center mt-2">
                 <div class="fans flex justify-end items-center w-2/3 ">
@@ -50,17 +52,5 @@ const { cardData } = defineProps<IProps>()
 </template>
 
 <style scoped>
-.active-desc p {
-    display: -webkit-box;
-    /* 将元素作为弹性伸缩盒子展示 */
-    -webkit-line-clamp: 2;
-    /* 限制文本行数为 2 行 */
-    -webkit-box-orient: vertical;
-    /* 设置伸缩盒子为垂直方向 */
-    overflow: hidden;
-    /* 隐藏溢出文本 */
-    text-overflow: ellipsis;
-    /* 使用省略号截断溢出文本 */
 
-}
 </style>

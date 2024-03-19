@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@vant/area-data": "^1.5.1",
+    "axios": "^1.6.8",
     "pinia": "^2.1.7",
     "swiper": "^11.0.7",
     "vant": "^4.8.5",

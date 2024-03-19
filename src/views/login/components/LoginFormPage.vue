@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { login } from '@/api/login';
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
@@ -9,27 +10,41 @@ const buttonLoading = ref(false);
 const resetForm = () => {
     account.value = '';
     password.value = '';
-     
+
 }
 
-const onSubmit = (values: any) => {
+const onSubmit = async (values: any) => {
     console.log('submit', values);
     buttonLoading.value = true;
     // 登录逻辑
 
     // 模仿发起请求
-    const loginFnc = new Promise((resolve) => {
-        setTimeout(() => {
-            resolve('登录成功');
-        }, 2000);
-    })
+    // const loginFnc = new Promise((resolve) => {
+    //     setTimeout(() => {
+    //         resolve('登录成功');
+    //     }, 2000);
+    // })
 
-    loginFnc.then((res) => {
-        console.log(res);
-        // 登录成功后的逻辑处理
+    // loginFnc.then((res) => {
+    //     console.log(res);
+    //     // 登录成功后的逻辑处理
+    //     buttonLoading.value = false;
+    //     resetForm();
+    // })
+
+    try {
+        const res = await login({
+            username:values.account,
+            password: values.password
+        })
         buttonLoading.value = false;
-        resetForm();
-    })
+        resetForm()
+        console.log(res);
+    } catch (error) {
+        console.log(error);
+
+    }
+
 
 }
 </script>

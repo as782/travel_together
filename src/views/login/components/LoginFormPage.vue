@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { login } from '@/api/login';
+import { login } from '@/api/user';
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
-
+import { RouterLink, useRouter } from 'vue-router';
+import { useUserStore } from '../../../stores/modules/user';
+const router = useRouter();
+const userStore = useUserStore();
 const account = ref('');
 const password = ref('');
 const buttonLoading = ref(false);
@@ -17,32 +19,19 @@ const onSubmit = async (values: any) => {
     console.log('submit', values);
     buttonLoading.value = true;
     // 登录逻辑
-
-    // 模仿发起请求
-    // const loginFnc = new Promise((resolve) => {
-    //     setTimeout(() => {
-    //         resolve('登录成功');
-    //     }, 2000);
-    // })
-
-    // loginFnc.then((res) => {
-    //     console.log(res);
-    //     // 登录成功后的逻辑处理
-    //     buttonLoading.value = false;
-    //     resetForm();
-    // })
-
     try {
-        const res = await login({
-            username:values.account,
+        const { data} = await login({
+            username: values.account,
             password: values.password
         })
+        userStore.setToken(data.token);
+        userStore.setUserInfo(data.user_info);
         buttonLoading.value = false;
         resetForm()
-        console.log(res);
+        router.push('/')
     } catch (error) {
-        console.log(error);
-
+        console.error(error);
+        buttonLoading.value = false;
     }
 
 
@@ -70,4 +59,4 @@ const onSubmit = async (values: any) => {
         </div>
     </div>
 </template>
-<style scoped></style>
+<style scoped></style>@/api/user

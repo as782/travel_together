@@ -1,6 +1,16 @@
 <script setup lang="ts">
+import { showToast } from 'vant';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 const checked = ref<Boolean>(false);
+const router = useRouter();
+const toLogin = () => {
+    if (!checked.value) {
+        showToast('请先同意用户协议和隐私政策')
+        return;
+    }
+    router.push('/accountLogin')
+}
 </script>
 <template>
     <div class="container-box bg-red-300 h-screen ">
@@ -36,7 +46,7 @@ const checked = ref<Boolean>(false);
 
             </div>
             <div class="w-5/6 mx-auto mt-5">
-                <van-button icon="lock" color="#0feff0" block to="/accountLogin">账号密码登录</van-button>
+                <van-button icon="lock" color="#0feff0" block @Click="toLogin" >账号密码登录</van-button>
             </div>
             <div class="flex w-4/6 mx-auto mt-5  ">
                 <van-checkbox v-model="checked" icon-size="18px">

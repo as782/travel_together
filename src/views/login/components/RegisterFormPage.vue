@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import { showToast, type FieldRuleValidator } from 'vant';
+import { register } from '@/api/user';
 
+const rouetr = useRouter();
 const account = ref('');
 const password = ref('');
 const password2 = ref('');
@@ -12,27 +15,28 @@ const resetForm = () => {
     password.value = '';
     password2.value = '';
 }
+const passwordValidator: FieldRuleValidator = (val) => {
+    return val === password.value;
 
-const onSubmit = (values: any) => {
-    console.log('submit', values);
+}
+const onSubmit = async (values: any) => {
+
     buttonLoading.value = true;
-    // 登录逻辑
-
-    // 模仿发起请求
-    const loginFnc = new Promise((resolve) => {
-        setTimeout(() => {
-            resolve('登录成功');
-        }, 2000);
-    })
-
-    loginFnc.then((res) => {
-        console.log(res);
-        // 登录成功后的逻辑处理
+    // 注册逻辑
+    try {
+        await register({
+            username: values.account,
+            password: values.password2
+        })
+        resetForm();
         buttonLoading.value = false;
-
-        resetForm(); // 重置表单
-    })
-
+        showToast('注册成功');
+        rouetr.push('/accountLogin')
+    } catch (error) {
+        console.error(error);
+        buttonLoading.value = false;
+    }
+    
 }
 
 
@@ -49,10 +53,10 @@ const onSubmit = (values: any) => {
                 <van-field v-model="account" name="account" label="用户名" placeholder="填写用户名"
                     :rules="[{ required: true, message: '请填写用户名' }]" />
                 <van-field v-model="password" type="password" name="password" label="密码" placeholder="填写密码"
-                    :rules="[{ required: true, message: '请填写密码' }]" />
+                    :rules="[{ required: true, message: '请填写密码' }]" trigger="onBlur" />
 
                 <van-field v-model="password2" type="password" name="password2" label="确认密码" placeholder="再次输入密码"
-                    :rules="[{ required: true, message: '请填写密码' }]" />
+                :rules="[{ validator: passwordValidator, message: '两次密码输入不一致' }]"  />
 
             </van-cell-group>
             <div class="button-cell m-4">

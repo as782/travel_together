@@ -1,7 +1,7 @@
 import { BASE_URL, CONTENT_TYPE, TIMEOUT } from '@/config/http'
 import axios from 'axios'
 import type { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
-import { showFailToast } from 'vant'
+import { showNotify } from 'vant'
 
 // 统一后端返回数据格式
 export interface Result<T = any> {
@@ -21,7 +21,7 @@ const service: AxiosInstance = axios.create({
 // 请求拦截
 service.interceptors.request.use(
   (config) => {
-    config.headers!.Authorization = 'Bearer ' + localStorage.getItem('token')
+    config.headers!.Authorization = localStorage.getItem('token')
     return config
   },
   (error: AxiosError) => {
@@ -39,26 +39,32 @@ service.interceptors.response.use(
     // 处理 HTTP 网络错误
     let message = ''
     // HTTP 状态码
-    const status = error.response?.status
-    switch (status) {
-      case 401:
-        message = 'token 失效，请重新登录'
-        // 这里可以触发退出的 action
-        break
-      case 403:
-        message = '拒绝访问'
-        break
-      case 404:
-        message = '请求地址错误'
-        break
-      case 500:
-        message = '服务器故障'
-        break
-      default:
-        message = '网络连接故障'
+    const { code, msg } = error.response?.data || {
+      code: error.response.status,
+      msg: error.response.statusText
     }
 
-    showFailToast(message || 'Error')
+    switch (code) {
+      case 401:
+        message = msg
+        break
+      case 403:
+        message = msg
+        break
+      case 404:
+        message = msg
+        break
+      case 500:
+        message = msg
+        break
+      default:
+        message = msg
+    }
+
+    showNotify({
+      message: message || 'Error',
+      type: 'danger'
+    })
     return Promise.reject(new Error(error || 'Error'))
   }
 )

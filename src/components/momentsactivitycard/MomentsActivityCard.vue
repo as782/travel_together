@@ -11,10 +11,10 @@ const { momentData } = defineProps<IProps>();
 <template>
     <div class="moment-card  p-2 rounded-md   bg-white  shadow-lg shadow-slate-200">
         <div class="card-top flex  items-center">
-            <van-image class="flex-none w-8 aspect-square" round fit="cover" :src="momentData?.user?.avatar" />
+            <van-image class="flex-none w-8 aspect-square" round fit="cover" :src="momentData?.userInfo?.avatar_url" />
             <div class="flex flex-col flex-1 ml-2">
-                <h4 class="text-sm">{{ momentData?.user?.nickName }}</h4>
-                <span class="user-state text-xs text-gray-500">{{ momentData?.createTime }}小时前</span>
+                <h4 class="text-sm">{{ momentData?.userInfo?.nickname }}</h4>
+                <span class="userInfo-state text-xs text-gray-500">{{ momentData?.createTime }}小时前</span>
             </div>
             <van-button v-if="!momentData?.isFollow" class="flex-none" icon="plus" type="primary" round plain
                 size="small">关注</van-button>

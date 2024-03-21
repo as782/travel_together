@@ -1,11 +1,25 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
 import PublishCard from '@/components/publishcard/PublishCard.vue';
 import type { PublishCardData } from '@/components/publishcard/types';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
-
+import { useUserStore } from "@/stores/modules/user"
+import { calculateDiffDate } from '@/utils/tool';
+import { getUserPublish } from '@/api/user';
+import {
+    getTeamMembers,
+    getMomentPostComments,
+    getMomentPostLikes
+} from '@/api/post';
+import type { MomentCardData } from '@/components/momentsactivitycard/types';
+import type { GroupCardData } from '@/components/groupcard/types';
+onMounted(() => {
+    console.log('mine setp');
+    getMyPublish();
+})
+const { userInfo } = useUserStore();
 const router = useRouter();
 const shareOptions = [
     [
@@ -21,6 +35,8 @@ const shareOptions = [
         { name: '小程序码', icon: 'weapp-qrcode' },
     ],
 ]
+
+
 // handle top 
 const topState = reactive({
     isShow: false,
@@ -38,36 +54,90 @@ const handleTopShare = () => {
 }
 
 // tags
-const tags = reactive([
-    { id: 1, name: '00后' },
-    { id: 2, name: '狮子座' },
-])
+const tags = computed(() => {
+    return userInfo?.tags || [];
+})
+
 
 // 卡片 handle
-const cardData: PublishCardData[] = []
-for (let i = 0; i < 10; i++) {
-    cardData.push({
-        id: i,
-        user: {
-            id: i,
-            nickName: `张${i}三`,
-            avatar: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        isFollow: false,
-        content: {
-            desc: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis fugiat iusto accusantium officiis doloremque culpa perferendis quis veritatis eum provident!',
-            images: [
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
-            ]
-        },
-
-        createTime: '1689992122',
-        likeCount: i * 21,
-        commentCount: i * 76
-    },)
+const cardData: { type: 'moment' | 'group', data: PublishCardData }[] = reactive([]);
+interface PostData {
+    [key: number]: any[];
 }
+const momentComments = reactive<PostData>({});
+const likeUsers = reactive<PostData>({});
+/** 获取加入小队的成员 */
+const getGroupPeoples = async (post_id: number) => {
+    const res = await getTeamMembers(post_id)
+    return res.data;
+}
+/** 获取动态评论 */
+const getMomentComments = async (post_id: number) => {
+    let res = await getMomentPostComments(post_id)
+    momentComments[post_id] = res.data;
+
+}
+/** 获取动态点赞 */
+const getMomentLikes = async (post_id: number) => {
+    let res = await getMomentPostLikes(post_id)
+    likeUsers[post_id] = res.data;
+}
+/** 获取我的发布 */
+const getMyPublish = async () => {
+    let res = await getUserPublish({ user_id: 1, page: 1, limit: 10 });
+
+    // 等待所有异步操作完成，再处理返回的数据
+    const publichList: Promise<{ type: 'moment' | 'group', data: PublishCardData }>[] = res.data.list.map(async (item: any) => {
+        if (item.post_id) {
+            const fans = await getGroupPeoples(item.post_id); // 等待异步操作完成
+            const gropCardData: GroupCardData = {
+                card_id: item.post_id,
+                userInfo: {
+                    user_id: userInfo?.user_id ?? 0,
+                    nickname: userInfo?.nickname ?? 'Unkonw',
+                    avatar_url: userInfo?.avatar_url ?? "",
+                    likeFans: fans
+                },
+                condition: {
+                    destination: [item.start_location, item.end_location],
+                    time: item.duration_day
+                },
+                desc: item.title,
+                cover_imgUrl: item.images[0],
+                createTime: item.create_time,
+            }
+
+            return { type: 'group', data: gropCardData } as { type: 'moment' | 'group', data: GroupCardData }
+        } else {
+            await getMomentComments(item.dynamic_post_id)
+            await getMomentLikes(item.dynamic_post_id)
+            const momentCardData: MomentCardData = {
+                card_id: item.dynamic_post_id,
+                userInfo: {
+                    user_id: userInfo?.user_id ?? 0,
+                    nickname: userInfo?.nickname ?? "Unknow",
+                    avatar_url: userInfo?.avatar_url ?? "",
+                },
+                isFollow: false,
+                content: {
+                    desc: item.content,
+                    images: item.images,
+                },
+                createTime: item.create_time,
+                likeCount: momentComments[item.dynamic_post_id].length,
+                commentCount: likeUsers[item.dynamic_post_id].length
+            }
+
+            return { type: 'moment', data: momentCardData } as { type: 'moment' | 'group', data: MomentCardData }
+        }
+    })
+
+    // 等待所有异步操作完成后，将结果添加到 cardData 中
+    const resolvedPublichList = await Promise.all(publichList);
+    cardData.push(...resolvedPublichList);
+}
+
+
 const handleCardClick = (id: number) => {
     console.log('card click', id);
     router.push(`/momentDetail/${id}`);
@@ -155,26 +225,24 @@ const handleClickMomment = (id: number) => {
                 <div class="profile-top flex flex-row-reverse  w-full p-2">
                     <div
                         class="-translate-y-8 flex flex-none justify-center items-center w-16 h-16 rounded-full  bg-white shadow-lg">
-                        <img class="w-4/5 h-4/5 rounded-full"
-                            src="https://img.pconline.com.cn/images/upload/upc/tx/photoblog/1407/12/c4/36240468_36240468_1405175533420_mthumb.jpg"
-                            alt="avatar">
+                        <img class="w-4/5 h-4/5 rounded-full" :src="userInfo?.avatar_url" alt="avatar">
                     </div>
                     <BlankSpaceBox class="flex-1" />
                     <div class="flex-none">
-                        <div class="text-lg font-bold">小明</div>
-                        <div class="text-sm">ID:123131</div>
+                        <div class="text-lg font-bold">{{ userInfo?.nickname }}</div>
+                        <div class="text-sm">ID:{{ userInfo?.user_id }}</div>
                     </div>
                 </div>
                 <div class="profile-center  px-2">
                     <div class="w-full">
                         <!-- 个性签名 -->
-                        <div class="text-left text-sm text-slate-500">这个人很懒，什么都没有留下</div>
+                        <div class="text-left text-sm text-slate-500">{{ userInfo?.bio || '这个人很懒，什么都没有留下' }}</div>
                         <!-- 标签 -->
 
                         <template v-for="tag in tags" :key="tag.id">
                             <van-tag class="mx-1" round color="#ffe1e1" text-color="#ad0000">
-                                <span class="w-6 h-4 text-center" style="font-size: 8px;">
-                                    {{ tag.name }}
+                                <span class=" h-4 text-center" style="font-size: 8px;">
+                                    {{ tag.tag_name }}
                                 </span>
                             </van-tag>
                         </template>
@@ -182,7 +250,13 @@ const handleClickMomment = (id: number) => {
                 </div>
                 <div class="proflie-bottom  p-2">
                     <div class="flex justify-between items-center ">
-                        <span class="flex-1 text-xs">一起旅行了111天</span>
+                        <span class="flex-1 text-xs">
+                            一起旅行了
+                            <strong class="text-blue-500">
+                                {{ calculateDiffDate(userInfo?.created_at) }}
+                            </strong>
+                            天
+                        </span>
                         <div class="flex flex-none items-center ">
                             <div @click="router.push('/follow')" class="flex flex-col items-center flex-none mx-2">
                                 <div class="text-sm">0</div>
@@ -223,16 +297,17 @@ const handleClickMomment = (id: number) => {
             <div class=" ">
                 <h4 class="text-gray-500 text-sm">我的发布</h4>
                 <template v-for="moment in cardData" :key="moment.id">
-                    <PublishCard class="my-4" :moment-data="moment" @click="() => handleCardClick(moment.id)"
-                        @click-like="() => handleClickLike(moment.id)" @click-share="handleShare"
-                        @click-comment="() => handleClickMomment(moment.id)" />
+                    <PublishCard class="my-4" :card-data="moment.data" :type="moment.type"
+                        @click="() => handleCardClick(moment.data.card_id)"
+                        @click-like="() => handleClickLike(moment.data.card_id)" @click-share="handleShare"
+                        @click-comment="() => handleClickMomment(moment.data.card_id)" />
                 </template>
             </div>
             <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
             <van-action-sheet v-model:show="commemtPlaneShow" title="评论">
-                <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
-                    v-model:error="commentState.error" :comment-list="commentList"
-                    :handle-comment-on-load="handleCommentOnLoad" />
+                <CommentPlane class="h-52" v-model:loading="commentState.loading"
+                    v-model:finished="commentState.finished" v-model:error="commentState.error"
+                    :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
             </van-action-sheet>
         </div>
     </main>

@@ -1,7 +1,7 @@
 import type { UserInfo } from '@/api/user/types'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import authHelper from '@/utils/auth/authHelper'
+import { ref } from 'vue'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(null)
@@ -18,7 +18,7 @@ export const useUserStore = defineStore('user', () => {
   function isLogin() {
     return token.value !== '' || Boolean(authHelper.getSessionStorage('token'))
   }
- 
+
   function resetUserSotre() {
     userInfo.value = null
     token.value = ''

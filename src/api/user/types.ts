@@ -10,7 +10,6 @@ export interface LoginResult {
   user_info: UserInfo
 }
 
-
 interface Address {
   name?: string // 地址名称
   code?: string // 地址代码或邮政编码
@@ -25,7 +24,7 @@ interface Tags {
   tag_id?: number // 标签ID
   tag_name?: string // 标签名称
 }
-// user_info
+/**user_info**/
 export interface UserInfo {
   user_id: number
   avatar_url: string
@@ -38,4 +37,26 @@ export interface UserInfo {
   address: Address
   tags: Tags[]
   created_at: string
+}
+
+/** 用户卡片 */
+export interface UserCard extends Pick<UserInfo, 'user_id' | 'avatar_url' | 'nickname'> {}
+
+/**分页查询参数 */
+export interface PageParams {
+  page?: number
+  limit?: number
+}
+/**分页查询返回结果 */
+export interface PageResult<T, R> {
+  list: (T | R)[]
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  currentPage: number
+}
+
+/** 获取用户发布参数 */
+export interface GetUserPostsParams extends PageParams {
+  user_id: number
 }

@@ -1,10 +1,8 @@
+import type { UserCard } from "@/api/user/types"
+
 interface MomentCardData {
-  id: number
-  user: {
-    id: number
-    nickName: string
-    avatar: string
-  }
+  card_id: number
+  userInfo:UserCard
   isFollow: boolean
   content: {
     desc: string

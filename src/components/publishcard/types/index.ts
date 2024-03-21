@@ -1,3 +1,4 @@
-import type{ MomentCardData } from '@/components/momentsactivitycard/types'
+import type { GroupCardData } from '@/components/groupcard/types'
+import type { MomentCardData } from '@/components/momentsactivitycard/types'
 
-export interface PublishCardData extends MomentCardData {}
+export type PublishCardData = MomentCardData | GroupCardData;

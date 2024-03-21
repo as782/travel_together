@@ -8,7 +8,8 @@ const loginRoutes: RouteRecordRaw[] = [
     meta: {
       title: '起始页',
       keepAlive: true,
-      hideNavbar: true
+      hideNavbar: true,
+      noToken:true
     },
     component: () => import('../views/login/LoginApp.vue')
   },
@@ -18,7 +19,8 @@ const loginRoutes: RouteRecordRaw[] = [
     meta: {
       title: '账号登录',
       keepAlive: false,
-      hideNavbar: false
+      hideNavbar: false,
+      noToken:true
     },
     component: () => import('../views/login/components/LoginFormPage.vue')
   },
@@ -28,7 +30,8 @@ const loginRoutes: RouteRecordRaw[] = [
     meta: {
       title: '注册账号',
       keepAlive: false,
-      hideNavbar: false
+      hideNavbar: false,
+      noToken:true
     },
     component: () => import('../views/login/components/RegisterFormPage.vue')
   }

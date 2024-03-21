@@ -2,6 +2,7 @@ import { BASE_URL, CONTENT_TYPE, TIMEOUT } from '@/config/http'
 import axios from 'axios'
 import type { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
 import { showNotify } from 'vant'
+import authHelper from '../auth/authHelper'
 
 // 统一后端返回数据格式
 export interface Result<T = any> {
@@ -47,6 +48,8 @@ service.interceptors.response.use(
     switch (code) {
       case 401:
         message = msg
+        // token 校验失败
+        authHelper.clearSessionStorage()
         break
       case 403:
         message = msg

@@ -2,9 +2,9 @@
 import { login } from '@/api/user';
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
-import { useUserStore } from '../../../stores/modules/user';
+import authHelper from '@/utils/auth/authHelper';
+
 const router = useRouter();
-const userStore = useUserStore();
 const account = ref('');
 const password = ref('');
 const buttonLoading = ref(false);
@@ -20,12 +20,13 @@ const onSubmit = async (values: any) => {
     buttonLoading.value = true;
     // 登录逻辑
     try {
-        const { data} = await login({
+        const { data } = await login({
             username: values.account,
             password: values.password
         })
-        userStore.setToken(data.token);
-        userStore.setUserInfo(data.user_info);
+        authHelper.setSessionStorage('token', data.token);
+        authHelper.setSessionStorage('userInfo', data.user_info);
+        authHelper.syncInfoToUserStore();
         buttonLoading.value = false;
         resetForm()
         router.push('/')

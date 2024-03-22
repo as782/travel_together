@@ -10,17 +10,17 @@ export interface LoginResult {
   user_info: UserInfo
 }
 
-interface Address {
+export interface Address {
   name?: string // 地址名称
   code?: string // 地址代码或邮政编码
 }
 
-interface Contact {
+export interface Contact {
   email?: string // 电子邮箱
   phone?: string // 联系电话
 }
 
-interface Tags {
+export interface Tags {
   tag_id?: number // 标签ID
   tag_name?: string // 标签名称
 }
@@ -59,4 +59,9 @@ export interface PageResult<T, R> {
 /** 获取用户发布参数 */
 export interface GetUserPostsParams extends PageParams {
   user_id: number
+}
+
+/** 标签列表返回 */
+export interface TagResult {
+  list: Tags[]
 }

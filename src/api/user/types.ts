@@ -48,12 +48,17 @@ export interface PageParams {
   limit?: number
 }
 /**分页查询返回结果 */
-export interface PageResult<T, R> {
+export interface PageResult<T> {
+  list: T[]
+  pageSize?: number
+  totalCount?: number
+  totalPages?: number
+  currentPage?: number
+}
+
+/** 用户发布列表返回 */
+export interface UserPostsResult<T, R> extends Omit<PageResult<T>, 'list'> {
   list: (T | R)[]
-  pageSize: number
-  totalCount: number
-  totalPages: number
-  currentPage: number
 }
 
 /** 获取用户发布参数 */
@@ -64,4 +69,12 @@ export interface GetUserPostsParams extends PageParams {
 /** 标签列表返回 */
 export interface TagResult {
   list: Tags[]
+}
+
+/** 点赞帖子关联数据类型 */
+export interface LikePostResult {
+  user_id?: number
+  post_id?: number
+  dynamic_id?: number
+  created_at?: string
 }

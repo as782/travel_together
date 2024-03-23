@@ -16,6 +16,10 @@ export interface GroupDetail {
   images: string[]
   theme_id: number
   created_at: string
+  itinerary?: string
+  user_info?: UserCard
+  comments?: Comment[]
+  like_userIds?: number[]
 }
 
 /** 动态帖详情类型 */
@@ -25,6 +29,9 @@ export interface MomentDetail {
   content: string
   images: string[]
   created_at: string
+  user_info?: UserCard
+  comments?: Comment[]
+  like_userIds?: number[]
 }
 
 /** 加入小队人员信息类型 */
@@ -36,6 +43,7 @@ export interface JoinTeamInfo extends UserCard {
 export interface Comment {
   comment_id: number
   user_id: number
+  user_info?: UserCard
   content: string
   created_at: string
 }

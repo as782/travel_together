@@ -1,5 +1,8 @@
 import type { UserCard } from '../user/types'
-
+export interface Images{
+  image_id:number,
+  image_url:string,
+}
 /** 组队贴详情类型 */
 export interface GroupDetail {
   post_id: number
@@ -13,7 +16,7 @@ export interface GroupDetail {
   start_location: string
   end_location: string
   team_size: number
-  images: string[]
+  images: Images[]
   theme_id: number
   created_at: string
   itinerary?: string
@@ -27,7 +30,7 @@ export interface MomentDetail {
   dynamic_post_id: number
   user_id: number
   content: string
-  images: string[]
+  images: Images[]
   created_at: string
   user_info?: UserCard
   comments?: Comment[]

@@ -46,6 +46,8 @@ export interface UserCard extends Pick<UserInfo, 'user_id' | 'avatar_url' | 'nic
 export interface PageParams {
   page?: number
   limit?: number
+  theme_id?: number // 分主题查询
+  follow_user_ids?: number[] //  用于区分世界，和关注的动态
 }
 /**分页查询返回结果 */
 export interface PageResult<T> {
@@ -72,9 +74,9 @@ export interface TagResult {
 }
 
 /** 点赞帖子关联数据类型 */
-export interface LikePostResult {
+export interface LikePostRelative {
   user_id?: number
   post_id?: number
-  dynamic_id?: number
+  dynamic_post_id?: number
   created_at?: string
 }

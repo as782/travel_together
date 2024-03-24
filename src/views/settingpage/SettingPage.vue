@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import { useUserStore } from '@/stores/modules/user';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const LogOut = () => {
+    useUserStore().resetUserSotre();
+    router.push('/login');
+}
+</script>
+
 <template>
     <main>
         <van-cell-group class="my-2">
@@ -13,13 +23,9 @@
 
         </van-cell-group>
         <div class="bg-white mt-4 py-4 flex justify-center items-center">
-            <van-button class="w-full" type="primary">退出登录</van-button>
+            <van-button class="w-full" type="primary" @click="LogOut">退出登录</van-button>
         </div>
     </main>
 </template>
-
-<script setup lang="ts">
-
-</script>
 
 <style scoped></style>

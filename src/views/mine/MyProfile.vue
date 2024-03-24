@@ -15,12 +15,31 @@ import {
 } from '@/api/post';
 import type { MomentCardData } from '@/components/momentsactivitycard/types';
 import type { GroupCardData } from '@/components/groupcard/types';
+import { onActivated } from 'vue';
 onMounted(() => {
-    console.log('mine setp');
-    getMyPublish();
+
+
 })
-const { userInfo } = useUserStore();
+onActivated(() => {
+    console.log('mounted');
+    // 获取用户发布的列表;
+    getMyPublish();
+    // 获取用户的喜欢关注, 粉丝, 如果数据状态为idle则执行
+    myFans.status === 'idle' && getMyFollows();
+    myFollows.status === 'idle' && getMyFans();
+    // 获取用户喜欢的帖子列表
+    getMylikePostList();
+})
+
 const router = useRouter();
+
+const { userInfo, myFans, myFollows, myLikeGroupPostList, myLikeMomentPostList, getMyFans, getMyFollows, getMylikePostList } = useUserStore();
+const myFansAndFollowsAndLikesCount = computed(() => {
+    const fansCount = myFans.data.length;
+    const followCount = myFollows.data.length;
+    const likeCount = myLikeGroupPostList.data.length + myLikeMomentPostList.data.length;
+    return { fansCount, followCount, likeCount };
+});
 const shareOptions = [
     [
         { name: '微信', icon: 'wechat' },
@@ -77,7 +96,7 @@ const getMomentComments = async (post_id: number) => {
     momentComments[post_id] = res.data;
 
 }
-/** 获取动态点赞 */
+/** 获取动态点赞用户id列表 */
 const getMomentLikes = async (post_id: number) => {
     let res = await getMomentPostLikes(post_id)
     likeUsers[post_id] = res.data;
@@ -89,14 +108,14 @@ const getMyPublish = async () => {
     // 等待所有异步操作完成，再处理返回的数据
     const publichList: Promise<{ type: 'moment' | 'group', data: PublishCardData }>[] = res.data.list.map(async (item: any) => {
         if (item.post_id) {
-            const fans = await getGroupPeoples(item.post_id); // 等待异步操作完成
+            const joinMans = await getGroupPeoples(item.post_id); // 等待异步操作完成
             const gropCardData: GroupCardData = {
                 card_id: item.post_id,
                 userInfo: {
                     user_id: userInfo?.user_id ?? 0,
                     nickname: userInfo?.nickname ?? 'Unkonw',
                     avatar_url: userInfo?.avatar_url ?? "",
-                    likeFans: fans
+                    likeFans: joinMans
                 },
                 condition: {
                     destination: [item.start_location, item.end_location],
@@ -111,6 +130,7 @@ const getMyPublish = async () => {
         } else {
             await getMomentComments(item.dynamic_post_id)
             await getMomentLikes(item.dynamic_post_id)
+            const isLike = likeUsers[item.dynamic_post_id].some((item: any) => item.user_id === userInfo?.user_id)
             const momentCardData: MomentCardData = {
                 card_id: item.dynamic_post_id,
                 userInfo: {
@@ -119,13 +139,14 @@ const getMyPublish = async () => {
                     avatar_url: userInfo?.avatar_url ?? "",
                 },
                 isFollow: false,
+                isLike,
                 content: {
                     desc: item.content,
                     images: item.images,
                 },
                 createTime: item.create_time,
-                likeCount: momentComments[item.dynamic_post_id].length,
-                commentCount: likeUsers[item.dynamic_post_id].length
+                likeCount: likeUsers[item.dynamic_post_id].length,
+                commentCount: momentComments[item.dynamic_post_id].length
             }
 
             return { type: 'moment', data: momentCardData } as { type: 'moment' | 'group', data: MomentCardData }
@@ -259,15 +280,15 @@ const handleClickMomment = (id: number) => {
                         </span>
                         <div class="flex flex-none items-center ">
                             <div @click="router.push('/follow')" class="flex flex-col items-center flex-none mx-2">
-                                <div class="text-sm">0</div>
+                                <div class="text-sm">{{ myFansAndFollowsAndLikesCount.followCount }}</div>
                                 <div class="text-xs">关注</div>
                             </div>
                             <div @click="router.push('/fans')" class="flex flex-col items-center flex-none mx-2">
-                                <div class="text-sm">0</div>
+                                <div class="text-sm">{{ myFansAndFollowsAndLikesCount.fansCount }}</div>
                                 <div class="text-xs">粉丝</div>
                             </div>
                             <div @click="router.push('/like')" class="flex flex-col items-center flex-none mx-2">
-                                <div class="text-sm">0</div>
+                                <div class="text-sm">{{ myFansAndFollowsAndLikesCount.likeCount }}</div>
                                 <div class="text-xs">喜欢</div>
                             </div>
                         </div>

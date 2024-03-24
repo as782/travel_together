@@ -10,6 +10,8 @@ declare module 'vue' {
     BlankSpaceBox: typeof import('./src/components/blankspacebox/BlankSpaceBox.vue')['default']
     CommentPlane: typeof import('./src/components/commentplane/CommentPlane.vue')['default']
     EffectSwiper: typeof import('./src/components/carousel/EffectSwiper.vue')['default']
+    Empty: typeof import('./src/components/empty/Empty.vue')['default']
+    EmptyCard: typeof import('./src/components/empty/EmptyCard.vue')['default']
     GroupInfoCard: typeof import('./src/components/groupcard/GroupInfoCard.vue')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']
     IconDocumentation: typeof import('./src/components/icons/IconDocumentation.vue')['default']
@@ -39,6 +41,7 @@ declare module 'vue' {
     VanDatePicker: typeof import('vant/es')['DatePicker']
     VanDatetimePicker: typeof import('vant/es')['DatetimePicker']
     VanDivider: typeof import('vant/es')['Divider']
+    VanEmpty: typeof import('vant/es')['Empty']
     VanField: typeof import('vant/es')['Field']
     VanForm: typeof import('vant/es')['Form']
     VanIcon: typeof import('vant/es')['Icon']
@@ -60,6 +63,7 @@ declare module 'vue' {
     VanTabbarItem: typeof import('vant/es')['TabbarItem']
     VanTabs: typeof import('vant/es')['Tabs']
     VanTag: typeof import('vant/es')['Tag']
+    VanTextEllipsis: typeof import('vant/es')['TextEllipsis']
     VanUploader: typeof import('vant/es')['Uploader']
   }
 }

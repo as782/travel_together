@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed } from 'vue';
+import { reactive, ref, computed, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
 import PublishCard from '@/components/publishcard/PublishCard.vue';
-import type { PublishCardData } from '@/components/publishcard/types';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
 import { useUserStore } from "@/stores/modules/user"
 import { calculateDiffDate } from '@/utils/tool';
@@ -11,62 +10,57 @@ import { getUserPublish } from '@/api/user';
 import {
     getTeamMembers,
     getMomentPostComments,
-    getMomentPostLikes
+    getMomentPostLikes,
+    likeMomentPost
 } from '@/api/post';
 import type { MomentCardData } from '@/components/momentsactivitycard/types';
 import type { GroupCardData } from '@/components/groupcard/types';
-import { onActivated } from 'vue';
-onMounted(() => {
+import { SHAREOPTIONS } from '@/config/index'
+import { watch } from 'vue';
+import { debounce } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { showToast } from 'vant';
+import CommentPlane from '@/components/commentplane/CommentPlane.vue';
 
-
-})
 onActivated(() => {
     console.log('mounted');
     // 获取用户发布的列表;
-    getMyPublish();
+    const user_id = userInfo?.value?.user_id;
+
+    user_id && getMyPublish(user_id);
     // 获取用户的喜欢关注, 粉丝, 如果数据状态为idle则执行
-    myFans.status === 'idle' && getMyFollows();
-    myFollows.status === 'idle' && getMyFans();
+    myFans.value.status === 'idle' && getMyFollows();
+    myFollows.value.status === 'idle' && getMyFans();
     // 获取用户喜欢的帖子列表
     getMylikePostList();
+
+    console.log(momentCardList.value);
 })
 
 const router = useRouter();
-
-const { userInfo, myFans, myFollows, myLikeGroupPostList, myLikeMomentPostList, getMyFans, getMyFollows, getMylikePostList } = useUserStore();
+const userStore = useUserStore();
+const { getMyFans, getMyFollows, getMylikePostList } = userStore;
+const { userInfo, myFans, myFollows, myLikeGroupPostList, myLikeMomentPostList } = storeToRefs(userStore);
 const myFansAndFollowsAndLikesCount = computed(() => {
-    const fansCount = myFans.data.length;
-    const followCount = myFollows.data.length;
-    const likeCount = myLikeGroupPostList.data.length + myLikeMomentPostList.data.length;
+    const fansCount = myFans.value.data.length;
+    const followCount = myFollows.value.data.length;
+    const likeCount = myLikeGroupPostList.value.data.length + myLikeMomentPostList.value.data.length;
     return { fansCount, followCount, likeCount };
 });
-const shareOptions = [
-    [
-        { name: '微信', icon: 'wechat' },
-        { name: '朋友圈', icon: 'wechat-moments' },
-        { name: '微博', icon: 'weibo' },
-        { name: 'QQ', icon: 'qq' },
-    ],
-    [
-        { name: '复制链接', icon: 'link' },
-        { name: '分享海报', icon: 'poster' },
-        { name: '二维码', icon: 'qrcode' },
-        { name: '小程序码', icon: 'weapp-qrcode' },
-    ],
-]
+
 
 
 // handle top 
 const topState = reactive({
     isShow: false,
-    shareOptions: shareOptions
+    shareOptions: SHAREOPTIONS
 })
 const cardShare = reactive({
     isShow: false,
-    shareOptions: shareOptions
+    shareOptions: SHAREOPTIONS
 })
 const handleConnectService = () => {
-
+    router.push('/chat/12')
 }
 const handleTopShare = () => {
     topState.isShow = true;
@@ -74,17 +68,18 @@ const handleTopShare = () => {
 
 // tags
 const tags = computed(() => {
-    return userInfo?.tags || [];
+    return userInfo?.value?.tags || [];
 })
 
 
-// 卡片 handle
-const cardData: { type: 'moment' | 'group', data: PublishCardData }[] = reactive([]);
+// ------我的发布数据处理------//
+const cardData = ref<any>([]);
 interface PostData {
     [key: number]: any[];
 }
 const momentComments = reactive<PostData>({});
 const likeUsers = reactive<PostData>({});
+
 /** 获取加入小队的成员 */
 const getGroupPeoples = async (post_id: number) => {
     const res = await getTeamMembers(post_id)
@@ -93,7 +88,16 @@ const getGroupPeoples = async (post_id: number) => {
 /** 获取动态评论 */
 const getMomentComments = async (post_id: number) => {
     let res = await getMomentPostComments(post_id)
-    momentComments[post_id] = res.data;
+    const comments = res.data.list.map((item: any) => {
+        const { comment_id, user_info, content, created_at, } = item
+        return {
+            comment_id,
+            userInfo: user_info,
+            content,
+            createTime: created_at,
+        }
+    });
+    momentComments[post_id] = comments;
 
 }
 /** 获取动态点赞用户id列表 */
@@ -102,19 +106,19 @@ const getMomentLikes = async (post_id: number) => {
     likeUsers[post_id] = res.data;
 }
 /** 获取我的发布 */
-const getMyPublish = async () => {
-    let res = await getUserPublish({ user_id: 1, page: 1, limit: 10 });
+const getMyPublish = async (user_id: number, page: number = 1, limit: number = 10) => {
+    let res = await getUserPublish({ user_id, page, limit });
 
     // 等待所有异步操作完成，再处理返回的数据
-    const publichList: Promise<{ type: 'moment' | 'group', data: PublishCardData }>[] = res.data.list.map(async (item: any) => {
+    const publichList: any[] = res.data.list.map(async (item: any) => {
         if (item.post_id) {
             const joinMans = await getGroupPeoples(item.post_id); // 等待异步操作完成
             const gropCardData: GroupCardData = {
                 card_id: item.post_id,
                 userInfo: {
-                    user_id: userInfo?.user_id ?? 0,
-                    nickname: userInfo?.nickname ?? 'Unkonw',
-                    avatar_url: userInfo?.avatar_url ?? "",
+                    user_id: userInfo?.value!.user_id ?? 0,
+                    nickname: userInfo?.value!.nickname ?? 'Unkonw',
+                    avatar_url: userInfo?.value!.avatar_url ?? "",
                     likeFans: joinMans
                 },
                 condition: {
@@ -122,21 +126,21 @@ const getMyPublish = async () => {
                     time: item.duration_day
                 },
                 desc: item.title,
-                cover_imgUrl: item.images[0],
+                cover_imgUrl: item.images[0].image_url,
                 createTime: item.create_time,
             }
 
-            return { type: 'group', data: gropCardData } as { type: 'moment' | 'group', data: GroupCardData }
+            return { type: 'group', data: gropCardData }
         } else {
             await getMomentComments(item.dynamic_post_id)
             await getMomentLikes(item.dynamic_post_id)
-            const isLike = likeUsers[item.dynamic_post_id].some((item: any) => item.user_id === userInfo?.user_id)
+            const isLike = likeUsers[item.dynamic_post_id].some((item: any) => item.user_id === userInfo?.value!.user_id)
             const momentCardData: MomentCardData = {
                 card_id: item.dynamic_post_id,
                 userInfo: {
-                    user_id: userInfo?.user_id ?? 0,
-                    nickname: userInfo?.nickname ?? "Unknow",
-                    avatar_url: userInfo?.avatar_url ?? "",
+                    user_id: userInfo?.value!.user_id ?? 0,
+                    nickname: userInfo?.value!.nickname ?? "Unknow",
+                    avatar_url: userInfo?.value!.avatar_url ?? "",
                 },
                 isFollow: false,
                 isLike,
@@ -145,84 +149,79 @@ const getMyPublish = async () => {
                     images: item.images,
                 },
                 createTime: item.create_time,
-                likeCount: likeUsers[item.dynamic_post_id].length,
-                commentCount: momentComments[item.dynamic_post_id].length
+                likeCount: item.like_count,
+                commentCount: item.comment_count,
             }
 
-            return { type: 'moment', data: momentCardData } as { type: 'moment' | 'group', data: MomentCardData }
+            return { type: 'moment', data: momentCardData }
         }
     })
 
     // 等待所有异步操作完成后，将结果添加到 cardData 中
     const resolvedPublichList = await Promise.all(publichList);
-    cardData.push(...resolvedPublichList);
+    cardData.value = resolvedPublichList;
 }
 
 
-const handleCardClick = (id: number) => {
-    console.log('card click', id);
-    router.push(`/momentDetail/${id}`);
-}
+//------卡片的交互逻辑处理------//
 
+/** 动态卡片数据 */
+const momentCardList = ref<any>([])
+watch(cardData, (newValue) => {
+    momentCardList.value = newValue.filter((item: any) => item.type === 'moment');
+})
 
+/** 评论数据 */
+const commentList = ref<CommentDetail[]>([])
+/** 评论加载状态 */
 const commentState = reactive<CommentState>({
     loading: false,
     finished: false,
     error: false,
 })
-const commentList = reactive<CommentDetail[]>([])
-
+/** 显示评论面板状态 */
 const commemtPlaneShow = ref(false);
 
 const handleCommentOnLoad = () => {
-    setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-            commentList.push({
-                id: i + Math.random(),
-                user: {
-                    id: i + Math.random(),
-                    nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                    avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
-
-                },
-                createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-                content: '星宿老仙派别，无量剑派？'
-            });
-        }
-
-        commentState.loading = false;
-
-        if (commentList.length > 40) {
-            commentState.finished = true;
-        }
-    }, 1000)
+    commentState.finished = true;
 }
-const handleClickLike = (id: number) => {
-    console.log("like", id);
 
+/** 点击评论 */
+const handleClickMomment = async (postId: number) => {
+    commemtPlaneShow.value = true;
+    commentList.value = momentComments[postId];
 }
+/** 点赞动态 */
+const handleClickLike = debounce(async (postId: number) => {
+    const config = {
+        post_id: postId,
+        user_id: userInfo.value!.user_id,
+    }
+    try {
+        const res = await likeMomentPost(config);
+
+        momentCardList.value.forEach((item: any, index: number) => {
+            if (item.data.card_id === postId) {
+                momentCardList.value[index].data.likeCount += res.data;
+                momentCardList.value[index].data.isLike = !momentCardList.value[index].data.isLike;
+            }
+        });
+        showToast(res.msg);
+    } catch (error) {
+        showToast("操作失败");
+    }
+}, 200)
 const handleShare = () => {
     topState.isShow = true;
 }
-const handleClickMomment = (id: number) => {
-    commemtPlaneShow.value = true;
-    console.log("momment", id);
 
-    for (let i = 0; i < 10; i++) {
-        commentList.push({
-            id: i + Math.random(),
-            user: {
-                id: i + Math.random(),
-                nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
 
-            },
-            createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-            content: '星宿老仙派别，无量剑派？'
-        })
+/** 点击卡片 */
+const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
+    if (postType === 'moment') {
+        router.push('/momentdetail' + postId)
     }
 }
-
 </script>
 <template>
     <main>
@@ -298,7 +297,7 @@ const handleClickMomment = (id: number) => {
 
             <!-- 我的组队，设置，个人资料 卡片 -->
             <div class="flex justify-around p-2 my-4 rounded-lg bg-white ">
-                <div @click="router.push('/mygroups')"
+                <div @click="router.push('/myjoinedgroups')"
                     class="flex flex-col justify-center items-center w-20 rounded-sm">
                     <van-icon name="friends-o" size="30"></van-icon>
                     <span class="text-sm text-gray-500"> 我的组队</span>
@@ -315,18 +314,19 @@ const handleClickMomment = (id: number) => {
 
 
             </div>
-            <div class=" ">
+            <div>
                 <h4 class="text-gray-500 text-sm">我的发布</h4>
+                <van-empty class="my-4" v-if="!cardData.length" description="未发布任何内容" />
                 <template v-for="moment in cardData" :key="moment.id">
                     <PublishCard class="my-4" :card-data="moment.data" :type="moment.type"
-                        @click="() => handleCardClick(moment.data.card_id)"
+                        @click="() => handleCardClick(moment.data.card_id, moment.type)"
                         @click-like="() => handleClickLike(moment.data.card_id)" @click-share="handleShare"
                         @click-comment="() => handleClickMomment(moment.data.card_id)" />
                 </template>
             </div>
             <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
             <van-action-sheet v-model:show="commemtPlaneShow" title="评论">
-                <CommentPlane class="h-52" v-model:loading="commentState.loading"
+                <CommentPlane   v-model:loading="commentState.loading"
                     v-model:finished="commentState.finished" v-model:error="commentState.error"
                     :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
             </van-action-sheet>

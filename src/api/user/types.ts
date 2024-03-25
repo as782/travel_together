@@ -58,10 +58,7 @@ export interface PageResult<T> {
   currentPage?: number
 }
 
-/** 用户发布列表返回 */
-export interface UserPostsResult<T, R> extends Omit<PageResult<T>, 'list'> {
-  list: (T | R)[]
-}
+ 
 
 /** 获取用户发布参数 */
 export interface GetUserPostsParams extends PageParams {

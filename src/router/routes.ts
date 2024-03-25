@@ -249,6 +249,23 @@ const pageRoutes: RouteRecordRaw[] = [
         component: () => import('../views/somelist/listfollow/FollowListPage.vue')
       }
     ]
+  },
+  {
+    path: '/myjoinedgroups',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'myjoinedgroups',
+        meta: {
+          title: '加入的队伍',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/somelist/listMyJoins/MyJoinedTeam.vue')
+      }
+    ]
   }
 ]
 export const routes: RouteRecordRaw[] = [

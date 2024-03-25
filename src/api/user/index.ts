@@ -7,9 +7,9 @@ import type {
   PageResult,
   TagResult,
   UserInfo,
-  UserPostsResult
 } from './types'
-import type { GroupDetail, MomentDetail } from '../post/types'
+import type { GroupDetail } from '../post/types'
+ 
 
 /**
  * 实现登录
@@ -31,7 +31,7 @@ export const register = (data: LoginData) => {
  * @returns
  */
 export const getUserPublish = (data: GetUserPostsParams) => {
-  return http.post<Result<UserPostsResult<GroupDetail, MomentDetail>>>('/users/getMyposts', data)
+  return http.post<Result<PageResult<any>>>('/users/getMyposts', data)
 }
 
 /** 修改个人信息 */
@@ -90,4 +90,9 @@ export const getUserLikeMoment = (userId: number) => {
 /** 用户喜欢的组队 */
 export const getUserLikeGroup = (userId: number) => {
   return http.get<Result<PageResult<Golike>>>('/like/getUserLikedTeamPosts/' + userId)
+}
+
+/** 用户加入的小队 */
+export const getUserJoinedGroups = (data:{user_id:number,page:number,limit:number})=>{
+  return http.post<Result<PageResult<GroupDetail>>>('/users/getJoinedTeams',data)
 }

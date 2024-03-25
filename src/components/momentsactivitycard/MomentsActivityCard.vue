@@ -18,7 +18,7 @@ const { momentData } = defineProps<IProps>();
                 <span class="userInfo-state text-xs text-gray-500">{{ momentData?.createTime.slice(0, 10) }}
                     {{ momentData?.createTime.slice(11, 16) }}</span>
             </div>
-            
+
             <van-button class="flex-none" @click.stop="$emit('clickFollow')" :icon="momentData?.isFollow ? '' : 'plus'"
                 type="primary" round :plain="momentData?.isFollow" size="small">
                 {{ momentData?.isFollow ? "已关注" : "关注" }}

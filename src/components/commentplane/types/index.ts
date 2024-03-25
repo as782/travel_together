@@ -1,26 +1,20 @@
+import type { UserCard } from '@/api/user/types'
+
 interface CommentState {
   loading: boolean
   finished: boolean
   error: boolean
 }
 interface CommentDetail {
-  id: number
+  comment_id: number
+  userInfo: UserCard
   content: string
   createTime: string
-  user: {
-    id: number
-    nickname: string
-    avatar: string
-  }
   reply?: {
     id: number
+    user: UserCard
     content: string
     createTime: string
-    user: {
-      id: number
-      nickname: string
-      avatar: string
-    }
   }[]
 }
 

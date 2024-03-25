@@ -6,8 +6,6 @@ import { showToast } from 'vant';
 import { debounce } from 'lodash';
 import type { MomentCardData } from '@/components/momentsactivitycard/types/index'
 import MomentsActivityCard from '@/components/momentsactivitycard/MomentsActivityCard.vue';
-import CommentPlane from '@/components/commentplane/CommentPlane.vue';
-import type { CommentDetail, CommentState } from '@/components/commentplane/types';
 import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 import { usePostStore } from '@/stores/modules/post';
 import { useUserStore } from '@/stores/modules/user';
@@ -88,17 +86,6 @@ const topState = reactive({
         ],
     ]
 })
-/** 评论弹窗控制 */
-const commentState = reactive<CommentState>({
-    loading: false,
-    finished: false,
-    error: false,
-})
-
-/** 评论数据列表 */
-const commentList = reactive<CommentDetail[]>([])
-/** 评论弹出控制 */
-const commemtPlaneShow = ref(false);
 
 /** 点击关注 */
 const handleClickFollow = debounce(async (followingId: number, postId: number) => {
@@ -151,52 +138,13 @@ const handleClickLike = debounce(async (postId: number) => {
 const handleShare = () => {
     topState.isShow = true;
 }
-/** 点击评论 */
-const handleClickMomment = (id: number) => {
-    commemtPlaneShow.value = true;
-    console.log("momment", id);
 
-    for (let i = 0; i < 10; i++) {
-        commentList.push({
-            id: i + Math.random(),
-            user: {
-                id: i + Math.random(),
-                nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
 
-            },
-            createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-            content: '星宿老仙派别，无量剑派？'
-        })
-    }
-}
-/** 评论列表下拉刷新处理函数 */
-const handleCommentOnLoad = () => {
-    setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-            commentList.push({
-                id: i + Math.random(),
-                user: {
-                    id: i + Math.random(),
-                    nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                    avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
 
-                },
-                createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-                content: '星宿老仙派别，无量剑派？'
-            });
-        }
-
-        commentState.loading = false;
-
-        if (commentList.length > 40) {
-            commentState.finished = true;
-        }
-    }, 1000)
-}
 // ------喜欢的组队Tab页处理-----//
 /** 组队卡片数据列表 */
 const groupCardData = ref<GroupCardData[]>([]);
+
 /** 获取加入小队的成员 */
 const getGroupPeoples = async (post_id: number) => {
     const res = await getTeamMembers(post_id)
@@ -247,18 +195,12 @@ const handeGroupCardClick = (card_id: number) => {
                         <MomentsActivityCard class="my-2" :moment-data="moment"
                             @click="() => handleMomentCardClick(moment.card_id)"
                             @click-like="() => handleClickLike(moment.card_id)" @click-share="handleShare"
-                            @click-comment="() => handleClickMomment(moment.card_id)"
                             @click-follow="() => handleClickFollow(moment.userInfo.user_id, moment.card_id)" />
                     </template>
                 </div>
             </van-tab>
         </van-tabs>
         <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
-        <van-action-sheet v-model:show="commemtPlaneShow" title="评论">
-            <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
-                v-model:error="commentState.error" :comment-list="commentList"
-                :handle-comment-on-load="handleCommentOnLoad" />
-        </van-action-sheet>
     </div>
 </template>
 

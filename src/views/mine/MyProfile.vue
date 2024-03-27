@@ -85,6 +85,8 @@ const getGroupPeoples = async (post_id: number) => {
     const res = await getTeamMembers(post_id)
     return res.data;
 }
+
+
 /** 获取动态评论 */
 const getMomentComments = async (post_id: number) => {
     let res = await getMomentPostComments(post_id)
@@ -183,13 +185,14 @@ const commentState = reactive<CommentState>({
 const commemtPlaneShow = ref(false);
 
 const handleCommentOnLoad = () => {
-    commentState.finished = true;
+    commentState.loading = false;
 }
 
 /** 点击评论 */
 const handleClickMomment = async (postId: number) => {
     commemtPlaneShow.value = true;
     commentList.value = momentComments[postId];
+    commentState.finished = true;
 }
 /** 点赞动态 */
 const handleClickLike = debounce(async (postId: number) => {
@@ -325,12 +328,12 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
                 </template>
             </div>
             <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
-            <van-action-sheet v-model:show="commemtPlaneShow" title="评论">
-                <CommentPlane   v-model:loading="commentState.loading"
-                    v-model:finished="commentState.finished" v-model:error="commentState.error"
-                    :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
-            </van-action-sheet>
         </div>
+        <van-action-sheet class="h-screen"   v-model:show="commemtPlaneShow" title="评论">
+            <CommentPlane v-model:loading="commentState.loading"
+                v-model:finished="commentState.finished" v-model:error="commentState.error"
+                :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
+        </van-action-sheet>
     </main>
 </template>
 

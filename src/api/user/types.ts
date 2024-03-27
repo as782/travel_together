@@ -47,7 +47,9 @@ export interface PageParams {
   page?: number
   limit?: number
   theme_id?: number // 分主题查询
-  follow_user_ids?: number[] //  用于区分世界，和关注的动态
+  user_id?: number 
+  post_id?: number // 用于区分用户发布的内容
+  follow?:boolean //  用于区分世界，和关注的动态
 }
 /**分页查询返回结果 */
 export interface PageResult<T> {

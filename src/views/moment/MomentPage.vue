@@ -6,124 +6,250 @@ import MomentsActivityCard from '@/components/momentsactivitycard/MomentsActivit
 import { useRouter } from 'vue-router';
 import CommentPlane from '@/components/commentplane/CommentPlane.vue';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
-const router = useRouter();
+import { SHAREOPTIONS } from '@/config';
+import { getMomentPostComments, getMomentPosts, likeMomentPost } from '@/api/post';
+import type { PageParams } from '@/api/user/types';
+import { useUserStore } from '@/stores/modules/user';
+import { debounce } from 'lodash';
+import { showToast } from 'vant';
+import { followOneUser } from '@/api/user';
 
-// tab switch
+
+const router = useRouter();
+const userStore = useUserStore();
+const { userInfo } = userStore;
+const cardDataList = ref<MomentCardData[]>([]);
+
+
+//--------切换tabs处理--------//
 const activeTab = ref('focusman');
+/** 关注和世界动态 */
+const tabs = ['focusman', 'worldman']
 const handleSwitchTab = (tabname: string) => {
     activeTab.value = tabname;
-
+    cardDataList.value = [];
+    pageState.value = {
+        currentPage: 1,
+        pageSize: 10,
+        total: -1,
+    }
+    listState.value = {
+        loading: false,
+        error: false,
+        finished: false,
+    }
 }
 
-// 卡片 handle
-const cardData: MomentCardData[] = []
-for (let i = 0; i < 10; i++) {
-    cardData.push({
-        id: i,
-        user: {
-            id: i,
-            nickName: `张${i}三`,
-            avatar: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        isFollow: false,
-        content: {
-            desc: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis fugiat iusto accusantium officiis doloremque culpa perferendis quis veritatis eum provident!',
-            images: [
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
-            ]
-        },
 
-        createTime: '1689992122',
-        likeCount: i * 21,
-        commentCount: i * 76
-    },)
+
+/** 控制列表下拉状态，方便分页加载 */
+const listState = ref({
+    loading: false,
+    error: false,
+    finished: false,
+})
+const pageState = ref({
+    currentPage: 1,
+    pageSize: 10,
+    total: -1
+})
+
+/** 获取所需要数据 */
+const getDatalist = async (isGetFollow: boolean = false) => {
+    // 获取数据
+
+    const config: PageParams = {
+        page: pageState.value.currentPage,
+        limit: pageState.value.pageSize,
+        user_id: userInfo?.user_id,
+
+    }
+    if (isGetFollow) {
+        config.follow = true;
+    }
+    try {
+        // listState.value.loading = true;
+        // 获取动态
+        const res = await getMomentPosts(config);
+        const cardList = res.data.list.map((item) => {
+            const data: MomentCardData = {
+                card_id: item.dynamic_post_id,
+                userInfo: item.user_info,
+                content: {
+                    desc: item.content,
+                    images: item.images
+                },
+                isFollow: item.isFollowed,
+                isLike: item.isLiked,
+                likeCount: item.like_count,
+                commentCount: item.comment_count,
+                createTime: item.created_at,
+            }
+            return data
+        })
+
+        cardDataList.value.push(...cardList);
+
+
+        pageState.value.total = res.data.totalCount!;
+     
+        
+        pageState.value.currentPage = res.data.currentPage!;
+
+        listState.value.loading = false;
+        listState.value.error = false;
+        listState.value.finished = pageState.value.total <= cardDataList.value.length;
+    } catch (error) {
+        console.log(error);
+        listState.value.loading = false;
+        listState.value.error = true;
+    }
+
 }
+// 下拉列表刷新处理事件
+const listOnloadHandle = debounce(async () => {
+    if (activeTab.value === 'focusman') {
+        await getDatalist(true)
+        pageState.value.currentPage++;
+        console.log(pageState.value.currentPage);
+
+    } else {
+
+        await getDatalist();
+        pageState.value.currentPage++;
+    }
+
+}, 100);
+
+
+//--------卡片交互处理--------//
 const handleCardClick = (id: number) => {
-    console.log('card click', id);
     router.push(`/momentDetail/${id}`);
 }
 
-// card bottom button handle
+/** 处理点击喜欢 */
+const handleClickLike = debounce(async (postId: number) => {
+    const config = {
+        post_id: postId,
+        user_id: userInfo?.user_id!,
+    }
+    try {
+        const res = await likeMomentPost(config);
+
+        cardDataList.value.forEach((item, index) => {
+            if (item.card_id === postId) {
+                cardDataList.value[index].likeCount += res.data;
+                cardDataList.value[index].isLike = !cardDataList.value[index].isLike;
+            }
+        });
+        showToast(res.msg);
+    } catch (error) {
+        showToast("操作失败");
+    }
+}, 200)
+
+/** 点击关注 */
+const handleClickFollow = debounce(async (followingId: number, postId: number) => {
+    const config = {
+        follower_id: userInfo?.user_id!,
+        following_id: followingId,
+        action: 1
+    }
+    cardDataList.value.forEach((item, index) => {
+        if (item.card_id === postId) {
+            cardDataList.value[index].isFollow ? config.action = 0 : config.action = 1;
+        }
+    });
+
+    try {
+        const res = await followOneUser(config)
+        cardDataList.value.forEach((item, index) => {
+            if (item.card_id === postId) {
+                cardDataList.value[index].isFollow = !cardDataList.value[index].isFollow;
+            }
+        });
+        showToast(res.msg);
+    } catch (error) {
+        console.log(error)
+        showToast('操作失败');
+    }
+}, 200)
+
+/** 处理分享 */
 const topState = reactive({
     isShow: false,
-    shareOptions: [
-        [
-            { name: '微信', icon: 'wechat' },
-            { name: '朋友圈', icon: 'wechat-moments' },
-            { name: '微博', icon: 'weibo' },
-            { name: 'QQ', icon: 'qq' },
-        ],
-        [
-            { name: '复制链接', icon: 'link' },
-            { name: '分享海报', icon: 'poster' },
-            { name: '二维码', icon: 'qrcode' },
-            { name: '小程序码', icon: 'weapp-qrcode' },
-        ],
-    ]
+    shareOptions: SHAREOPTIONS
 })
-const commentState = reactive<CommentState>({
+const handleShare = () => {
+    topState.isShow = true;
+}
+
+/** 评论相关 */
+const commentList = ref<CommentDetail[]>([])
+
+const commemtPlaneShow = ref(false);
+const commentListState = ref<CommentState>({
     loading: false,
     finished: false,
     error: false,
 })
-const commentList = reactive<CommentDetail[]>([])
+const commemtPageState = ref({
+    currentPage: 1,
+    pageSize: 10,
+    total: -1,
+    post_id: -1
+})
 
-const commemtPlaneShow = ref(false);
+/** 获取动态评论列表 */
+const getCommentDataList = async () => {
+    const config = {
+        page: commemtPageState.value.currentPage,
+        limit: commemtPageState.value.pageSize,
+        post_id: commemtPageState.value.post_id
+    }
+    try {
+        let res = await getMomentPostComments(config)
+        const comments = res.data.list.map((item: any) => {
+            const { comment_id, user_info, content, created_at, } = item
+            return {
+                comment_id,
+                userInfo: user_info,
+                content,
+                createTime: created_at,
+            }
+        });
+        commentList.value.push(...comments);
+        commemtPageState.value.total = res.data.totalCount!;
+        commemtPageState.value.pageSize = res.data.pageSize!;
+        commemtPageState.value.currentPage = res.data.currentPage!;
 
-const handleCommentOnLoad = () => {
-    setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-            commentList.push({
-                id: i + Math.random(),
-                user: {
-                    id: i + Math.random(),
-                    nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                    avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
-
-                },
-                createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-                content: '星宿老仙派别，无量剑派？'
-            });
-        }
-
-        commentState.loading = false;
-
-        if (commentList.length > 40) {
-            commentState.finished = true;
-        }
-    }, 1000)
-}
-const handleClickLike = (id: number) => {
-    console.log("like", id);
-
-}
-const handleShare = () => {
-    topState.isShow = true;
-}
-const handleClickMomment = (id: number) => {
-    commemtPlaneShow.value = true;
-    console.log("momment", id);
-
-    for (let i = 0; i < 10; i++) {
-        commentList.push({
-            id: i + Math.random(),
-            user: {
-                id: i + Math.random(),
-                nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
-
-            },
-            createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-            content: '星宿老仙派别，无量剑派？'
-        })
+        commentListState.value.loading = false;
+        commentListState.value.finished = commentList.value.length >= commemtPageState.value.total!;
+    } catch (error) {
+        commentListState.value.error = true;
+        commentListState.value.loading = false;
     }
 }
 
+
+const handleCommentOnLoad = debounce(async () => {
+    await getCommentDataList();
+    commemtPageState.value.currentPage++;
+}, 1000)
+
+
+const handleClickMomment =async (post_id: number) => {
+    commemtPlaneShow.value = true;
+    commemtPageState.value.post_id = post_id;
+    commentList.value = [];
+    await getCommentDataList();
+}
+
+
+
 </script>
 <template>
-    <main class="p-2 bg-slate-200">
+    <main class="p-2 ">
         <TopNav>
             <template #left>
                 <div class="flex  justify-center items-center  w-full ">
@@ -143,25 +269,26 @@ const handleClickMomment = (id: number) => {
         </TopNav>
         <BlankSpaceBox :height="'50px'" />
         <van-tabs v-model:active="activeTab" animated :show-header="false">
-            <van-tab name="focusman">
-                <template v-for="moment in cardData" :key="moment.id">
-                    <MomentsActivityCard class="my-2" :moment-data="moment"
-                        @click="() => handleCardClick(moment.id)" @click-like="() => handleClickLike(moment.id)"
-                        @click-share="handleShare" @click-comment="() => handleClickMomment(moment.id)" />
-                </template>
-            </van-tab>
-            <van-tab name="worldman">
-                <template v-for="moment in cardData" :key="moment.id">
-                    <MomentsActivityCard class="my-2" :moment-data="{ ...moment, isFollow: Boolean(moment.id % 2) }"
-                        @click="() => handleCardClick(moment.id)" @click-like="() => handleClickLike(moment.id)"
-                        @click-share="handleShare" @click-comment="() => handleClickMomment(moment.id)" />
-                </template>
-            </van-tab>
+            <template v-for="tabname in tabs" :key="tabname">
+                <van-tab :name="tabname">
+                    <van-list v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"
+                        v-model:error="listState.error" error-text="请求失败，点击重新加载" @load="listOnloadHandle">
+                        <template v-for="moment in cardDataList" :key="moment.card_id">
+                            <MomentsActivityCard class="my-2" :moment-data="moment"
+                                @click="() => handleCardClick(moment.card_id)"
+                                @click-like="() => handleClickLike(moment.card_id)" @click-share="handleShare"
+                                @click-comment="() => handleClickMomment(moment.card_id)"
+                                @click-follow="()=>handleClickFollow(moment.userInfo.user_id,moment.card_id)" />
+                        </template>
+                    </van-list>
+                </van-tab>
+            </template>
+
         </van-tabs>
         <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
-        <van-action-sheet v-model:show="commemtPlaneShow" title="评论">
-            <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
-                v-model:error="commentState.error" :comment-list="commentList"
+        <van-action-sheet  class="h-96"  v-model:show="commemtPlaneShow" title="评论">
+            <CommentPlane v-model:loading="commentListState.loading" v-model:finished="commentListState.finished"
+                v-model:error="commentListState.error" :comment-list="commentList"
                 :handle-comment-on-load="handleCommentOnLoad" />
         </van-action-sheet>
     </main>

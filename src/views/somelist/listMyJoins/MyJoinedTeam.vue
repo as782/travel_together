@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/modules/user';
 import { getTeamMembers } from '@/api/post';
 import type { GroupCardData } from '@/components/groupcard/types';
 import { useRouter } from 'vue-router';
+import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 onMounted(() => {
     getJoinedList();
 

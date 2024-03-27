@@ -8,8 +8,8 @@ export const getTeamMembers = (postId: number) => {
 }
 
 /** 获取动态评论 */
-export const getMomentPostComments = (postId: number) => {
-  return http.get<Result<PageResult<Comment>>>(`/comment/getPostDynamicComments/${postId}`)
+export const getMomentPostComments = (data: PageParams) => {
+  return http.post<Result<PageResult<Comment>>>(`/comment/getPostDynamicComments/`, data)
 }
 
 /** 获取动态点赞用户id列表 */
@@ -32,16 +32,16 @@ export const getTeamPosts = (data: PageParams) => {
   return http.post<Result<PageResult<GroupDetail>>>('/post/getTeamPostsForPage', data)
 }
 
-/** 获取动态页的动态帖子列表 "follow_user_ids": [] 需要传入 */
+/** 获取动态页的动态帖子列表 user_id 需要传入则获取关注用户的 */
 export const getMomentPosts = (data: PageParams) => {
-  return http.post<Result<PageResult<MomentDetail>>>('/post/getTeamPostsForPage', data)
+  return http.post<Result<PageResult<any>>>('/post/getDynamicPostsForPage', data)
 }
 
 /** 点赞动态 */
-export const likeMomentPost = (data:{post_id:number,user_id:number}) => {
-  return http.post<Result<any>>(`/like/likeDynamicPost`,data)
+export const likeMomentPost = (data: { post_id: number; user_id: number }) => {
+  return http.post<Result<any>>(`/like/likeDynamicPost`, data)
 }
 /** 点赞组队 */
-export const likeTeamPost = (data:{post_id:number,user_id:number}) => {
-  return http.post<Result<any>>(`/like/likeTeamPost`,data)
+export const likeTeamPost = (data: { post_id: number; user_id: number }) => {
+  return http.post<Result<any>>(`/like/likeTeamPost`, data)
 }

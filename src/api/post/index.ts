@@ -1,5 +1,5 @@
 import { http, type Result } from '@/utils/http/request'
-import type { GroupDetail, JoinTeamInfo, MomentDetail } from './types'
+import type { GroupDetail, JoinTeamInfo, MomentDetail, Themes } from './types'
 import type { PageParams, PageResult } from '../user/types'
 
 // 获取小队成员
@@ -27,9 +27,14 @@ export const getMomentPostDetail = (postId: number) => {
   return http.get<Result<MomentDetail>>(`/post/getDynamicPost/${postId}`)
 }
 
+/** 获取组队帖主题列表 */
+export const getTeamPostThemes = () => {
+  return http.get<Result<Themes[]>>('/theme/getThemes')
+}
+
 /** 获取组队页的组队帖子列表 theme_id 需要传入 */
 export const getTeamPosts = (data: PageParams) => {
-  return http.post<Result<PageResult<GroupDetail>>>('/post/getTeamPostsForPage', data)
+  return http.post<Result<PageResult<any>>>('/post/getTeamPostsForPage', data)
 }
 
 /** 获取动态页的动态帖子列表 user_id 需要传入则获取关注用户的 */

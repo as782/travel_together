@@ -1,33 +1,34 @@
-<template>
-    <main class="bg-white">
-        <EffectSwiper :slideList="imgList"></EffectSwiper>
-        <van-tabs v-model:active="vanTabActive" class="mt-2 "  sticky :offset-top="50">
-            <van-tab v-for="item in  categoryList " :key="item.name" title-inactive-color="#ddd"
-                title-active-color="#000">
-                <template #title>
-                    <div class="rounded-md w-3/9 h-8 flex justify-center items-center">
-                        <span class="text-sm ">{{ item.name }}</span>
-                    </div>
-                </template>
-                <!-- 瀑布流布局 -->
-                <div class="p-2 mt-2 columns-2 md:columns-6 ">
-                    <template v-for="cardinfo in item.data " :key="cardinfo.card_id">
-                        <GroupInfoCard @click="handleGotoDetal(cardinfo.card_id)" :cardData="cardinfo" class="my-8" />
-                    </template>
-                </div>
-            </van-tab>
-        </van-tabs>
-    </main>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import EffectSwiper from '@/components/carousel/EffectSwiper.vue';
 import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 import type { SlideInfo } from '@/components/carousel/types';
-import type { CardInfo } from '@/components/groupcard/types';
+import type { GroupCardData } from '@/components/groupcard/types';
 import { useRouter } from 'vue-router';
+import { debounce } from 'lodash';
+import type { PageParams } from '@/api/user/types';
+import type { Themes } from '@/api/post/types'
+import { getTeamMembers, getTeamPosts } from '@/api/post/index'
+import { useThemesStore } from '@/stores/modules/themes';
+import { onMounted } from 'vue';
+import { watch } from 'vue';
+
+type PageState = { currentPage: number, pageSize: number, total: number }
+type ListState = { loading: boolean, finished: boolean, error: boolean }
+interface ThemeDataStateMap {
+    theme_id: number
+    dataList: GroupCardData[]
+    pageState: PageState
+    isFinished: boolean
+}
+
+onMounted(() => {
+    getCategoryList()
+})
+
 const router = useRouter();
+//------------ 轮播图处理 ---------------//
+/**  轮播的图片数据， 点击后需要考虑路由跳转 */
 const imgList = reactive<SlideInfo[]>([
     {
         imgUrl: 'https://swiperjs.com/demos/images/nature-1.jpg',
@@ -71,968 +72,157 @@ const imgList = reactive<SlideInfo[]>([
     }
 
 ]);
-const categoryList = reactive<{ name: string, data: CardInfo[] }[]>([{
-    name: '热门推荐',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
 
-            card_id: 331,
-            desc: 'ddffff,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+//----------- 组队贴分类筛选-----------//
+/**  分类列表 */
+const categoryList = ref<Themes[]>([])
+/** 当前主题 */
+const vanTabActive = ref<number>(0)
+/** 主题仓库 */
+const themesStore = useThemesStore()
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
-
-            card_id: 12,
-            desc: '差不多可以出发了,sa沙发沙发的',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 111,
-            desc: '是的方法,电风扇发射点',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 12314,
-            desc: '微软微软为,撒阿斯顿',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 132,
-            desc: '看了就好看,ui同一天',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
+/** 监听tab */
+watch(vanTabActive, async (theme_id) => {
+    listState.value = {
+        loading: false,
+        error: false,
+        finished: false,
+    }
+    let filterArr = cardDataThemeMap.value.filter(item => item.theme_id === theme_id)
+    if (filterArr.length > 0) {
+        listState.value.finished = filterArr[0].isFinished
+        cardDataList.value = filterArr[0].dataList
+    } else {
+        // 没有该主题的数据，则发起请求
+        const params = {
+            theme_id,
+            page: 1,
+            limit: 10
         }
-    ]
-},
-{
-    name: '徒步系列',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+        try {
 
-            card_id: 112,
-            desc: '阿斯顿发生,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
+            let result = await getCardDataList(params)
+            const { list, totalCount, currentPage, pageSize } = result.data
+            cardDataThemeMap.value.push({
+                theme_id,
+                pageState: {
+                    currentPage: currentPage!,
+                    pageSize: pageSize!,
+                    total: totalCount!,
+                },
+                dataList: list,
+                isFinished: false
+            })
+            cardDataList.value = list
+            console.log('tab');
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
+            listState.value.loading = false
+        } catch (error) {
+            console.log(error)
         }
-    ]
-},
-{
-    name: '文化系列',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+    }
+})
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+/** 获取所有主题列表 */
+const getCategoryList = async () => {
+    await themesStore.getThemes()
+    categoryList.value = themesStore.themes
+}
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
+/**  缓存： 主题-->数据列表 */
+const cardDataThemeMap = ref<ThemeDataStateMap[]>([])
+/**  数据列表 */
+const cardDataList = ref<GroupCardData[]>([])
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+/** 控制列表下拉状态，方便分页加载 */
+const listState = ref<ListState>({
+    loading: false,
+    error: false,
+    finished: false,
+})
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+/** 获取加入小队的成员 */
+const getGroupPeoples = async (post_id: number) => {
+    const res = await getTeamMembers(post_id)
+    return res.data;
+}
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+/**  获取数据列表 */
+const getCardDataList = async (params: PageParams) => {
+    try {
+        const result = await getTeamPosts(params)
+        listState.value.loading = false
+        result.data.list = await Promise.all(result.data.list.map(async (item: any) => {
+            const { user_info } = item;
+            const joinMans = await getGroupPeoples(item.post_id); // 等待异步操作完成
+            return {
+                userInfo: {
+                    user_id: user_info?.user_id ?? 0,
+                    nickname: user_info?.nickname ?? 'Unkonw',
+                    avatar_url: user_info?.avatar_url ?? "",
+                    likeFans: joinMans
+                },
+                card_id: item.post_id,
+                desc: item.title,
+                condition: {
+                    destination: [item.start_location, item.end_location],
+                    time: `${item.duration_day}`
+                },
+                cover_imgUrl: item.images[0].image_url,
+                createTime: item.created_at || undefined,
+            }
+        }))
+        return result
+    } catch (error) {
+        listState.value.loading = false
+        listState.value.error = true
+        throw error
+    }
+}
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+/** 下拉列表刷新处理事件 */
+const listOnloadHandle = debounce(async () => {
+    const theme_id = vanTabActive.value
+    const filterArr = cardDataThemeMap.value.filter(item => item.theme_id === theme_id)
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+    if (!filterArr[0].isFinished) {
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+        if (filterArr.length > 0) {
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+            const { currentPage, pageSize } = filterArr[0].pageState
+            filterArr[0].pageState.currentPage = currentPage! + 1
+            const params = {
+                theme_id,
+                page: filterArr[0].pageState.currentPage!,
+                limit: pageSize!
+            }
+            try {
+                const result = await getCardDataList(params)
+                const { list, totalCount, currentPage, pageSize } = result.data
+                filterArr[0].dataList = [...filterArr[0].dataList, ...list]
+                filterArr[0].pageState.currentPage = currentPage!
+                filterArr[0].pageState.pageSize = pageSize!
+                filterArr[0].pageState.total = totalCount!
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
+                if (filterArr[0].dataList.length >= filterArr[0].pageState.total) {
+                    filterArr[0].isFinished = true
+                }
+                console.log(filterArr[0].dataList.length, filterArr[0].pageState.total);
+
+                cardDataList.value = filterArr[0].dataList
+                listState.value.finished = filterArr[0].isFinished
+                listState.value.loading = false
+            } catch (error) {
+                console.log(error);
+
+            }
         }
-    ]
-},
-{
-    name: '越野',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
+    }
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
+}, 100);
 
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
 
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        }
-    ]
-},
-{
-    name: '露营',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: 'asdadaasdasdadsa！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
-
-            card_id: 1,
-            desc: 'sssssss,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '密码多少发多少发生,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '手动阀沙发ffffewqwea,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: 'dsfafd,dsaf',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        }
-    ]
-},
-{
-    name: '自驾',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: 'sdafy发广告的规划,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        }
-    ]
-},
-{
-    name: '骑行',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        }
-    ]
-},
-{
-    name: '登山',
-    data: [
-        {
-            userInfo: {
-                id: '11101',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }, {
-                    id: '22202',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11102',
-                name: 'LangGO',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [
-                    {
-                        id: '22201',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    },
-                    {
-                        id: '22202',
-                        name: "d1",
-                        avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                    }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11103',
-                name: '段誉',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11104',
-                name: '慕容复',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        },
-        {
-            userInfo: {
-                id: '11105',
-                name: '北乔峰',
-                avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                likeFans: [{
-                    id: '22201',
-                    name: "d1",
-                    avatar: "https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg",
-                }]
-            },
-
-            card_id: 1,
-            desc: '差不多可以出发了,如果准备好了的话！',
-            condition: {
-                destination: ['', '成都'],
-                time: '10'
-            },
-
-            cover_imgUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-        }
-    ]
-}]);
-
-const vanTabActive = ref<number>(0);
 
 const handleGotoDetal = (card_id: number) => {
 
@@ -1040,4 +230,31 @@ const handleGotoDetal = (card_id: number) => {
 }
 </script>
 
-<style scoped></style>../../components/groupcard/types
+<template>
+    <main class="bg-white">
+        <EffectSwiper :slideList="imgList"></EffectSwiper>
+
+        <van-tabs v-model:active="vanTabActive" class="mt-2 " animated sticky :offset-top="50">
+            <van-tab v-for="item in  categoryList " :name="item.theme_id" :key="item.theme_id"
+                title-inactive-color="#ddd" title-active-color="#000">
+                <template #title>
+                    <div class="rounded-md w-3/9 h-8 flex justify-center items-center">
+                        <span class="text-sm ">{{ item.theme_name }}</span>
+                    </div>
+                </template>
+                <!-- 瀑布流布局 -->
+                <van-empty v-if="!cardDataList.length" description="没有更多了"></van-empty>
+                <van-list v-else class="p-1 lg:columns-2 " offset="100" :immediate-check="false"
+                    v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"
+                    v-model:error="listState.error" error-text="请求失败，点击重新加载" @load="listOnloadHandle">
+                    <template v-for="(cardinfo) in cardDataList " :key="cardinfo.card_id">
+                        <GroupInfoCard @click="handleGotoDetal(cardinfo.card_id)" :cardData="cardinfo" class="m-2" />
+                    </template>
+                </van-list>
+            </van-tab>
+        </van-tabs>
+
+    </main>
+</template>
+
+<style scoped></style>

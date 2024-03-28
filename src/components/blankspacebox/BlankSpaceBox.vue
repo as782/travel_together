@@ -16,7 +16,7 @@ const style = computed(() => {
 });
 </script>
 <template>
-    <div class="cont-box" :style="style">
+    <div class="cont-box bg-white" :style="style">
 
     </div>
 </template>

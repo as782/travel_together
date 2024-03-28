@@ -58,3 +58,9 @@ export interface MomentComment extends Comment {
 export interface GroupComment extends Comment {
   post_id: number
 }
+
+
+export interface Themes {
+  theme_id: number
+  theme_name: string
+}

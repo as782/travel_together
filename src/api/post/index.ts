@@ -1,5 +1,5 @@
 import { http, type Result } from '@/utils/http/request'
-import type { GroupDetail, JoinTeamInfo, MomentDetail, Themes } from './types'
+import type { GroupDetail, JoinTeamInfo, MomentDetail, PublishGroupParams, PublishMomentParams, Themes, UpdateGroupParams, UpdateMomentParams } from './types'
 import type { PageParams, PageResult } from '../user/types'
 
 // 获取小队成员
@@ -49,4 +49,23 @@ export const likeMomentPost = (data: { post_id: number; user_id: number }) => {
 /** 点赞组队 */
 export const likeTeamPost = (data: { post_id: number; user_id: number }) => {
   return http.post<Result<any>>(`/like/likeTeamPost`, data)
+}
+
+/** 发布动态 */
+export const publishMomentPost = (data: PublishMomentParams) => {
+  return http.post<Result<any>>('/post/publishDynamicPost', data)
+}
+/** 修改动态 */
+export const modifyMomentPost = (data:UpdateMomentParams) => {
+  return http.post<Result<any>>('/post/modifyDynamicPost', data)
+}
+
+/** 发布组队 */
+export const publishTeamPost = (data: PublishGroupParams ) => {
+  return http.post<Result<any>>('/post/publishTeamPost', data)
+}
+
+/** 修改组队 */
+export const modifyTeamPost = (data: UpdateGroupParams) => {
+  return http.post<Result<any>>('/post/modifyTeamPost', data)
 }

@@ -24,6 +24,7 @@ interface ThemeDataStateMap {
 
 onMounted(() => {
     getCategoryList()
+    listOnloadHandle()
 })
 
 const router = useRouter();
@@ -88,8 +89,13 @@ watch(vanTabActive, async (theme_id) => {
         error: false,
         finished: false,
     }
-    let filterArr = cardDataThemeMap.value.filter(item => item.theme_id === theme_id)
+
+
+    let filterArr = cardDataThemeMap.value.filter(item => item.theme_id == theme_id)
+
+
     if (filterArr.length > 0) {
+
         listState.value.finished = filterArr[0].isFinished
         cardDataList.value = filterArr[0].dataList
     } else {
@@ -100,8 +106,6 @@ watch(vanTabActive, async (theme_id) => {
             limit: 10
         }
         try {
-
-
             let result = await getCardDataList(params)
             const { list, totalCount, currentPage, pageSize } = result.data
             cardDataThemeMap.value.push({
@@ -115,7 +119,6 @@ watch(vanTabActive, async (theme_id) => {
                 isFinished: false
             })
             cardDataList.value = list
-            console.log('tab');
 
             listState.value.loading = false
         } catch (error) {
@@ -242,8 +245,8 @@ const handleGotoDetal = (card_id: number) => {
                         <span class="text-sm ">{{ item.theme_name }}</span>
                     </div>
                 </template>
-                <!-- 瀑布流布局 -->
-                <van-empty v-if="!cardDataList.length" description="没有更多了"></van-empty>
+
+                <van-empty v-if="!cardDataList.length && listState.finished" description="没有更多了"></van-empty>
                 <van-list v-else class="p-1 lg:columns-2 " offset="100" :immediate-check="false"
                     v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"
                     v-model:error="listState.error" error-text="请求失败，点击重新加载" @load="listOnloadHandle">

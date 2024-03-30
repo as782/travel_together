@@ -9,7 +9,7 @@ const loginRoutes: RouteRecordRaw[] = [
       title: '起始页',
       keepAlive: true,
       hideNavbar: true,
-      noToken:true
+      noToken: true
     },
     component: () => import('../views/login/LoginApp.vue')
   },
@@ -20,7 +20,7 @@ const loginRoutes: RouteRecordRaw[] = [
       title: '账号登录',
       keepAlive: false,
       hideNavbar: false,
-      noToken:true
+      noToken: true
     },
     component: () => import('../views/login/components/LoginFormPage.vue')
   },
@@ -31,7 +31,7 @@ const loginRoutes: RouteRecordRaw[] = [
       title: '注册账号',
       keepAlive: false,
       hideNavbar: false,
-      noToken:true
+      noToken: true
     },
     component: () => import('../views/login/components/RegisterFormPage.vue')
   }
@@ -264,6 +264,40 @@ const pageRoutes: RouteRecordRaw[] = [
           noToken: false
         },
         component: () => import('../views/somelist/listMyJoins/MyJoinedTeam.vue')
+      }
+    ]
+  },
+  {
+    path: '/publishgroup',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'publishgroup',
+        meta: {
+          title: '发布队伍',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/publish/PublishGroupPage.vue')
+      }
+    ]
+  },
+  {
+    path: '/publishmoment',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'publishmoment',
+        meta: {
+          title: '发布动态',
+          keepAlive: false,
+          hideNavbar: false,
+          noToken: false
+        },
+        component: () => import('../views/publish/PublishMoment.vue')
       }
     ]
   }

@@ -3,8 +3,10 @@ import { computed, reactive, ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 
 import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue';
+import { useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
 // 定义枚举类型
 type TabBarItem = 'home' | 'moment' | 'message' | 'mine';
 
@@ -39,6 +41,10 @@ const onRefresh = () => {
         refreshLoading.value = false;
     }, 1000);
 }
+
+
+// 发布遮罩层
+const showMask = ref(false);
 
 </script>
 
@@ -88,10 +94,33 @@ const onRefresh = () => {
             <van-tabbar v-if="IsShowTabbar" v-model="tabActive">
                 <van-tabbar-item to="/home" name="home" icon="home-o">首页</van-tabbar-item>
                 <van-tabbar-item to="/moment" name="moment" icon="circle">圈子</van-tabbar-item>
-                <van-tabbar-item name="publish" icon="add-o">发布</van-tabbar-item>
+                <van-tabbar-item name="publish" icon="add-o" @click="showMask = true">发布</van-tabbar-item>
                 <van-tabbar-item to="/message" name="message" icon="chat-o">消息</van-tabbar-item>
                 <van-tabbar-item to="/mine" name="mine" icon="user-circle-o">我的</van-tabbar-item>
             </van-tabbar>
+
+            <van-overlay :z-index="1000" :show="showMask" @click="showMask = false">
+                <div class="relative w-full h-full flex  justify-center items-center bd" @click.stop>
+                    <div @click="router.push('/publishgroup')"
+                        class="flex flex-col justify-center items-center w-40 h-40 aspect-square mx-5 rounded-3xl border border-blue-300">
+                        <van-icon name="friends-o" size="100" color="#fff" />
+                        <span class="text-white text-center mt-2">
+                            发布组队
+                        </span>
+                    </div>
+                    <div @click="router.push('/publishmoment')"
+                        class="flex flex-col justify-center items-center w-40 h-40 aspect-square mx-5 rounded-3xl border border-blue-300">
+                        <van-icon name="smile-o" size="100" color="#fff" />
+                        <span class="text-white text-center mt-2">
+                            发布动态
+                        </span>
+                    </div>
+                    <div class="fixed bottom-0">
+                        <van-icon name="close" size="40" color="#fff" class="absolute top-0 right-0 m-5"
+                            @click="showMask = false" />
+                    </div>
+                </div>
+            </van-overlay>
         </van-config-provider>
     </main>
 </template>

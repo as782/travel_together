@@ -9,3 +9,23 @@ export const uploadAvatar = (filedata: any, usename: string) => {
     headers: { 'Content-Type': CONTENT_TYPE.form_data }
   })
 }
+export interface UploadImagPlayload {
+  filedata: any
+  username: string
+  flag: 'profile_bg' | 'avatar' | 'moment_post' | 'team_post' | 'initerary'
+}
+/**
+ * 上传图片
+ * @param filedata
+ * @param username
+ * @param flag profile_bg | avatar | moment_post | team_post |initerary
+ */
+export const uploadImageFile = (playload: UploadImagPlayload) => {
+  return http.post<Result<UploadResult>>(
+    `/upload/${playload.flag}/${playload.username}`,
+    playload.filedata,
+    {
+      headers: { 'Content-Type': CONTENT_TYPE.form_data }
+    }
+  )
+}

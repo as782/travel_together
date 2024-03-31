@@ -74,13 +74,25 @@ export interface PublishMomentParams extends Pick<MomentDetail, 'user_id' | 'con
 export interface UpdateMomentParams extends PublishMomentParams {
   dynamic_post_id: number
 }
-
-/** 发布组队帖子参数类型 */
-export interface PublishGroupParams
-  extends Omit<
+type PPP = Partial<
+  Pick<GroupDetail, 'user_id' | 'duration_day' | 'estimated_expense' | 'team_size' | 'theme_id'>
+> &
+  Omit<
     GroupDetail,
-    'post_id' | 'images' | 'created_at' | 'user_info' | 'comments' | 'like_userIds'
-  > {
+    | 'post_id'
+    | 'images'
+    | 'created_at'
+    | 'user_info'
+    | 'comments'
+    | 'like_userIds'
+    | 'user_id'
+    | 'duration_day'
+    | 'estimated_expense'
+    | 'team_size'
+    | 'theme_id'
+  >
+/** 发布组队帖子参数类型 */
+export interface PublishGroupParams extends PPP {
   image_urls: string[]
 }
 /** 修改组队帖子参数类型 */

@@ -88,8 +88,14 @@ const getGroupPeoples = async (post_id: number) => {
 
 
 /** 获取动态评论 */
-const getMomentComments = async (post_id: number) => {
-    let res = await getMomentPostComments(post_id)
+const getMomentComments = async () => {
+    const post_id = commemtPageState.value.post_id
+    const config = {
+        page: commemtPageState.value.currentPage,
+        limit: commemtPageState.value.pageSize,
+        post_id: commemtPageState.value.post_id
+    }
+    let res = await getMomentPostComments(config)
     const comments = res.data.list.map((item: any) => {
         const { comment_id, user_info, content, created_at, } = item
         return {
@@ -99,8 +105,17 @@ const getMomentComments = async (post_id: number) => {
             createTime: created_at,
         }
     });
-    momentComments[post_id] = comments;
-
+    if (momentComments[post_id]) {
+        momentComments[post_id] = momentComments[post_id].concat(comments);
+    } else {
+        momentComments[post_id] = comments;
+    }
+    commentList.value = momentComments[post_id];
+    commemtPageState.value.total = res.data.totalCount!;
+    commemtPageState.value.pageSize = res.data.pageSize!;
+    commemtPageState.value.currentPage = res.data.currentPage!;
+    commentState.value.loading = false;
+    commentState.value.finished = commentList.value.length >= commemtPageState.value.total!;
 }
 /** 获取动态点赞用户id列表 */
 const getMomentLikes = async (post_id: number) => {
@@ -129,12 +144,11 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
                 },
                 desc: item.title,
                 cover_imgUrl: item.images[0].image_url,
-                createTime: item.create_time,
+                createTime: item.created_at,
             }
 
             return { type: 'group', data: gropCardData }
         } else {
-            await getMomentComments(item.dynamic_post_id)
             await getMomentLikes(item.dynamic_post_id)
             const isLike = likeUsers[item.dynamic_post_id].some((item: any) => item.user_id === userInfo?.value!.user_id)
             const momentCardData: MomentCardData = {
@@ -150,7 +164,7 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
                     desc: item.content,
                     images: item.images,
                 },
-                createTime: item.create_time,
+                createTime: item.created_at,
                 likeCount: item.like_count,
                 commentCount: item.comment_count,
             }
@@ -176,23 +190,43 @@ watch(cardData, (newValue) => {
 /** 评论数据 */
 const commentList = ref<CommentDetail[]>([])
 /** 评论加载状态 */
-const commentState = reactive<CommentState>({
+const commentState = ref<CommentState>({
     loading: false,
     finished: false,
     error: false,
 })
+const commemtPageState = ref({
+    currentPage: 1,
+    pageSize: 10,
+    total: -1,
+    post_id: -1
+})
+
+const innitState = () => {
+    commentState.value.loading = false;
+    commentState.value.finished = false;
+    commentState.value.error = false;
+    commemtPageState.value.currentPage = 1;
+    commemtPageState.value.pageSize = 10;
+    commemtPageState.value.total = -1;
+    commemtPageState.value.post_id = -1;
+}
+
 /** 显示评论面板状态 */
 const commemtPlaneShow = ref(false);
 
-const handleCommentOnLoad = () => {
-    commentState.loading = false;
+const handleCommentOnLoad = async () => {
+    await getMomentComments()
+    commemtPageState.value.currentPage++;
 }
 
 /** 点击评论 */
 const handleClickMomment = async (postId: number) => {
     commemtPlaneShow.value = true;
-    commentList.value = momentComments[postId];
-    commentState.finished = true;
+    innitState();
+    commemtPageState.value.post_id = postId;
+    commentList.value = [];
+    await getMomentComments()
 }
 /** 点赞动态 */
 const handleClickLike = debounce(async (postId: number) => {
@@ -329,10 +363,10 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
             </div>
             <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
         </div>
-        <van-action-sheet class="h-screen"   v-model:show="commemtPlaneShow" title="评论">
-            <CommentPlane v-model:loading="commentState.loading"
-                v-model:finished="commentState.finished" v-model:error="commentState.error"
-                :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
+        <van-action-sheet class="h-screen" v-model:show="commemtPlaneShow" title="评论">
+            <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
+                v-model:error="commentState.error" :comment-list="commentList"
+                :handle-comment-on-load="handleCommentOnLoad" />
         </van-action-sheet>
     </main>
 </template>

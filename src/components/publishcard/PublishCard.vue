@@ -16,7 +16,7 @@ const { cardData, type } = defineProps<IProps>();
     <main class="bg-white p-2 rounded-lg shadow-lg">
         <div class="top-time flex">
             <van-icon name="dot" size="12" />
-            <span class="ml-2 text-black text-lg">2024.02</span>
+            <span class="ml-2 text-black text-lg">{{ cardData?.createTime.slice(0,10) }}</span>
         </div>
         <template v-if="type === 'moment'">
             <div class="card-content py-1">

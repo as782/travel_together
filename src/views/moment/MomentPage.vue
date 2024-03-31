@@ -200,6 +200,16 @@ const commemtPageState = ref({
     post_id: -1
 })
 
+const innitState = () => {
+    commentListState.value.loading = false;
+    commentListState.value.finished = false;
+    commentListState.value.error = false;
+    commemtPageState.value.currentPage = 1;
+    commemtPageState.value.pageSize = 10;
+    commemtPageState.value.total = -1;
+    commemtPageState.value.post_id = -1;
+}
+
 /** 获取动态评论列表 */
 const getCommentDataList = async () => {
     const config = {
@@ -240,6 +250,7 @@ const handleCommentOnLoad = debounce(async () => {
 
 const handleClickMomment =async (post_id: number) => {
     commemtPlaneShow.value = true;
+    innitState()
     commemtPageState.value.post_id = post_id;
     commentList.value = [];
     await getCommentDataList();

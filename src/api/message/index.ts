@@ -22,7 +22,7 @@ export const sendMsg = (data: SendMessageParams) => {
 
 /** 获取两者之间的消息 */
 export const getMessageBetweenForUser = (data: GetMessagesParams) => {
-  return http.post<Result<MsgPageResult<GetMessagesParamsResponse>>>(`/msg/getMessageBetweenForUser`, data)
+  return http.post<Result<MsgPageResult<GetMessagesParamsResponse>>>(`/msg/getMessagesBetweenUsers`, data)
 }
 
 /** 获取互动通知 */

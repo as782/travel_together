@@ -1,3 +1,5 @@
+import type { UserCard } from '../user/types'
+
 /** 角色类型 */
 export enum Role {
   ADMIN = 'admin',
@@ -59,8 +61,8 @@ export interface SendMessageParams {
 
 /** 获取两人之间的消息参数 */
 export interface GetMessagesParams extends MsgPageParams {
-  user_id1: number
-  user_id2: number
+  user1_id: number
+  user2_id: number
 }
 
 /** 获取管理员通知 */
@@ -104,10 +106,13 @@ export interface GetMessagesResponse {
 
 /** 获取两人之间消息返回类型 */
 export interface GetMessagesParamsResponse
-  extends Pick<MessageContent, 'content' | 'sender_id' | 'receiver_id' | 'created_at'> {}
+  extends Pick<MessageContent, 'content' | 'sender_id' | 'receiver_id' | 'created_at' | 'id'> {}
 
 /** 获取管理员通知返回类型 */
 export interface GetAdminNotificationsResponse extends MessageContent {}
 
 /** 获取互动通知返回类型 */
-export interface GetInteractiveNotificationsResponse extends MessageContent {}
+export interface GetInteractiveNotificationsResponse extends MessageContent {
+  senderInfo: UserCard
+  image?: string
+}

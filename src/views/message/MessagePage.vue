@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNotification } from '@/api/message/index';
-import type { MessageContent } from '@/api/message/types';
+import { MessageType, type MessageContent } from '@/api/message/types';
 import { useUserStore } from '@/stores/modules/user';
+import { useMessageStore } from '@/stores/modules/message';
 import { watch } from 'vue';
 import { getTimeDiffString } from '@/utils/tool';
 
-
 onMounted(() => {
     getNotice()
-    
+
 });
 
 const router = useRouter();
 const userStore = useUserStore()
+const useMessage = useMessageStore()
 
 const aboutMessage = ref<any>()
 const messageCardList = ref<any>([])
@@ -22,12 +22,18 @@ const adminNoticeList = ref<any>([])
 const interactiveNoticeList = ref<any>([])
 
 watch(aboutMessage, () => {
+
     // 处理私人消息
     const sendMessage: MessageContent[] = aboutMessage.value.messages.send;
     const receiveMessage: MessageContent[] = aboutMessage.value.messages.received;
     // 合并消息, 将发个同一个人的消息合并， 收到来自同一个的消息合并
     const mergedMessages = mergeMessages(sendMessage, receiveMessage);
     messageCardList.value = mergedMessages.map(message => generateMessageCardInfo(message, userStore.userInfo?.user_id!))
+
+    // 保存联系人信息
+    messageCardList.value.map((messageCard: any) => {
+        useMessage.setContactedUserMap(messageCard.userInfo.user_id, messageCard.userInfo)
+    })
 
     // 处理互动通知
     const interactiveNotice = aboutMessage.value.interactive;
@@ -40,16 +46,30 @@ watch(aboutMessage, () => {
 })
 // 先获取通知
 const getNotice = async () => {
-    try {
-        let notice = await getNotification(userStore.userInfo?.user_id!)
-        aboutMessage.value = notice.data
-    } catch (error) {
-        console.error(error);
+    if (useMessage.pageNotices.status === 'idle') {
+        await useMessage.getNotice(userStore.userInfo?.user_id!)
     }
+    aboutMessage.value = useMessage.pageNotices.data
+
 }
 
-const handleClickMessage = (id: number) => {
-    router.push(`chat/${id}`);
+/** 刷新 */
+const loading = ref(false)
+const onRefresh = () => {
+    loading.value = true
+    useMessage.pageNotices.status = 'idle'
+    getNotice().finally(() => {
+        setTimeout(() => {
+            loading.value = false;
+        }, 1000)
+    })
+}
+
+
+/** 跳转到对应的聊天界面 */
+const handleClickMessage = (message: any) => {
+    const { userInfo: { user_id } } = message
+    router.push(`chat/${user_id}`);
 }
 
 
@@ -119,6 +139,7 @@ function generateMessageCardInfo(message: MessageContent, userId: number) {
         userInfo,
         isRev: idSelf,
         content: message.content,
+        type: message.type,
         created_at: getTimeDiffString(message.created_at)
     }
 }
@@ -145,35 +166,66 @@ function generateMessageCardInfo(message: MessageContent, userId: number) {
                 </van-swipe>
             </van-notice-bar>
         </van-sticky>
-        <div class="system-info flex  p-2 m-2 border shadow-md" @click="router.push('/sysinfo')">
-            <van-icon name="bell" class="flex-none " size="40" color="#7fab50" />
-            <div class="mx-2 flex-1">
-                <div class="flex justify-between mb-1">
-                    <h4 class="text-sm text-left font-black">{{ '最新动态' }}</h4>
-                    <span class="user-state text-xs text-left text-gray-500">{{ 1 }}小时前</span>
-                </div>
-                <p class="text-xs truncate text-left text-gray-500">{{ interactiveNoticeList[0]?.content }}</p>
-            </div>
-        </div>
-        <van-list>
-            <div v-for="message in messageCardList" :key="message.id"
-                class="user-info flex  p-2 m-2 shadow-md border rounded-md border-gray-300"
-                @click="handleClickMessage(message)">
-                <van-image class="flex-none w-12 aspect-square shadow-lg shadow-slate-400" round fit="cover"
-                    :src="message.userInfo.avatar_url" />
+        <van-pull-refresh class="flex-1" v-model="loading" @refresh="onRefresh">
+            <div class="system-info flex  p-2 m-2 border shadow-md" @click="router.push('/aboutMoment')">
+                <van-icon name="bell" class="flex-none " size="40" color="#7fab50" />
                 <div class="mx-2 flex-1">
                     <div class="flex justify-between mb-1">
-                        <h4 class="text-sm text-left">{{ message.userInfo.nickname }}</h4>
-                        <span class="user-state text-xs text-left text-gray-500">{{ message.created_at }}</span>
+                        <h4 class="text-sm text-left font-black">{{ '最新动态' }}</h4>
+                        <span class="user-state text-xs text-left text-gray-500">
+                            {{ interactiveNoticeList[0]?.created_at || '' }}
+                        </span>
                     </div>
-                    <div class="flex">
-                        <van-tag v-if="!message.isRev" class="mx-2" mark type="success">我说</van-tag>
-                        <p class="text-xs truncate text-left text-gray-500">{{ message.content }}</p>
-                    </div>
+                    <p v-if="!interactiveNoticeList.length" class="text-xs truncate text-left text-gray-500">
+                        无动态
+                    </p>
+                    <p v-if="interactiveNoticeList[0]?.type === MessageType.TEAM_ACTIVITY_POST_COMMENT"
+                        class="text-xs truncate text-left text-gray-500">
+                        <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 评论了你的组队：{{
+            interactiveNoticeList[0]?.content }}
+                    </p>
+                    <p v-if="interactiveNoticeList[0]?.type === MessageType.DYNAMIC_POST_COMMENT"
+                        class="text-xs truncate text-left text-gray-500">
+                        <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 评论了你的动态：{{
+            interactiveNoticeList[0]?.content }}
+                    </p>
+                    <p v-if="interactiveNoticeList[0]?.type === MessageType.TEAM_ACTIVITY_POST_LIKE"
+                        class="text-xs truncate text-left text-gray-500">
+                        <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 点赞了你的组队
+                    </p>
+                    <p v-if="interactiveNoticeList[0]?.type === MessageType.DYNAMIC_POST_LIKE"
+                        class="text-xs truncate text-left text-gray-500">
+                        <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 点赞了你的动态
+                    </p>
+                    <p v-if="interactiveNoticeList[0]?.type === MessageType.FOLLOW_NOTIFICATION"
+                        class="text-xs truncate text-left text-gray-500">
+                        <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 关注了你
+                    </p>
+
+
+
                 </div>
             </div>
+            <van-list>
+                <div v-for="message in messageCardList" :key="message.id"
+                    class="user-info flex  p-2 m-2 shadow-md border rounded-md border-gray-300"
+                    @click="handleClickMessage(message)">
+                    <van-image class="flex-none w-12 aspect-square shadow-lg shadow-slate-400" round fit="cover"
+                        :src="message.userInfo.avatar_url" />
+                    <div class="mx-2 flex-1">
+                        <div class="flex justify-between mb-1">
+                            <h4 class="text-sm text-left">{{ message.userInfo.nickname }}</h4>
+                            <span class="user-state text-xs text-left text-gray-500">{{ message.created_at }}</span>
+                        </div>
+                        <div class="flex">
+                            <van-tag v-if="!message.isRev" class="mx-2" mark type="success">我说</van-tag>
+                            <p class="text-xs truncate text-left text-gray-500">{{ message.content }}</p>
+                        </div>
+                    </div>
+                </div>
 
-        </van-list>
+            </van-list>
+        </van-pull-refresh>
     </main>
 </template>
 

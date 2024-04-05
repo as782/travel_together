@@ -77,7 +77,7 @@ const mainRoutes: RouteRecordRaw[] = [
           hideNavbar: false,
           tabBar: true,
           noToken: true,
-          refresh: true
+          refresh: false
         },
         component: () => import('../views/message/MessagePage.vue')
       },
@@ -152,17 +152,22 @@ const pageRoutes: RouteRecordRaw[] = [
     component: () => import('../views/chat/ChatPage.vue')
   },
   {
-    path: '/sysinfo',
-    name: 'sysinfo',
-    meta: {
-      title: '系统动态',
-      keepAlive: true,
-      hideNavbar: false,
-      tabBar: false,
-      noToken: false,
-      refresh: true
-    },
-    component: () => import('../views/sysinfo/SystemInfoPage.vue')
+    path: '/aboutMoment',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'aboutMoment',
+        meta: {
+          title: '最新动态',
+          keepAlive: false,
+          hideNavbar: false,
+          tabBar: true,
+          noToken: false
+        },
+        component: () => import('../views/aboutmoment/aboutMomentPage.vue')
+      }
+    ]
   },
   {
     path: '/editprofile',

@@ -1,4 +1,10 @@
 import type { UserCard } from '../user/types'
+
+export enum PostIdType {
+  DYNAMIC_POST = 'dynamic_post_id',
+  TEAM_ACTIVITY_POST = 'post_id'
+}
+
 export interface Images {
   image_id: number
   image_url: string

@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full p-2   max-h-80  overflow-y-scroll">
-    <ul @click="handleEmojiClick" class="flex flex-col h-full">
+  <div class="w-full p-2   max-h-80"> 
+    <ul @click="handleEmojiClick" class="flex flex-col  max-h-80 overflow-y-scroll">
       <li
       class="flex justify-around my-1"
         v-for="(emojis, row) in EMOJIS"

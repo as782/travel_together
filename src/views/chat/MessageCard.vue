@@ -6,36 +6,37 @@ interface IProps {
     name?: string
     avatar?: string
     content?: string
+    createTime?: string
     isSend?: boolean
     isShowName?: boolean
 }
 // 判断是接收还是发送决定添加不同样式
-const props = defineProps<IProps>()
+const { name, avatar, content, isSend, isShowName } = defineProps<IProps>()
 
 const classname = computed(() => {
     return {
-        'send-message': props.isSend,
+        'send-message': isSend,
 
     }
 })
 const classnamePop = computed(() => {
     return {
-        'msg-pop-left': !props.isSend,
-        'msg-pop': props.isSend,
+        'msg-pop-left': !isSend,
+        'msg-pop': isSend,
 
     }
 })
 </script>
 <template>
     <div class="flex flex-col mb-2 ">
-        <span class="mx-auto my-1 text-xs">2020-02-09 19:10</span>
-        <div class="flex items-center " :class="classname">
-            <van-image class="w-10 h-10 aspect-square rounded-md mx-1 " fit="cover"
-                src="https://p5.itc.cn/images01/20200801/9b5229ef5d8a4ad2bab8778f219894bf.jpeg" />
+        <span class="mx-auto my-1 text-xs">{{ createTime }}</span>
+        <div class="flex  " :class="classname">
+            <van-image class="w-10 h-10 aspect-square rounded-md mx-1 " fit="cover" :src="avatar" />
             <div class=" flex flex-col justify-end">
-                <div class="text-xs font-bold" :class="{ 'text-right': props.isSend }">张三</div>
+                <div v-if="!isShowName" class="text-xs font-bold" :class="{ 'text-right': isSend }">{{ name || ''
+                    }}</div>
                 <!-- 气泡内容 -->
-                <div class="text-xs text-gray-500 p-2 " :class="classnamePop">这是张三的消息内容</div>
+                <div class="max-w-60 text-xs text-gray-500 p-2 " :class="classnamePop">{{ content }}</div>
             </div>
         </div>
     </div>
@@ -66,7 +67,7 @@ const classnamePop = computed(() => {
     border-width: 10px 10px 10px 10px;
     border-color: transparent transparent transparent #acb2bd;
     left: 100%;
-    top: 35%;
+    top: 35px;
     transform: translateY(-50%);
 }
 
@@ -87,7 +88,7 @@ const classnamePop = computed(() => {
     border-width: 10px 10px 10px 10px;
     border-color: transparent #2b64cc transparent transparent;
     right: 100%;
-    top: 35%;
+    top: 35px;
     transform: translateY(-50%);
 }
 </style>

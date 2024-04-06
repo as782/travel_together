@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BlankSpaceBox: typeof import('./src/components/blankspacebox/BlankSpaceBox.vue')['default']
+    ChatAndFollowButton: typeof import('./src/components/chatandfollowbutton/ChatAndFollowButton.vue')['default']
     CommentPlane: typeof import('./src/components/commentplane/CommentPlane.vue')['default']
     EffectSwiper: typeof import('./src/components/carousel/EffectSwiper.vue')['default']
     EmojiBoard: typeof import('./src/components/emoji/EmojiBoard.vue')['default']

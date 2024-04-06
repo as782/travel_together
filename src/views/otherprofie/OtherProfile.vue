@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { getMomentPostComments, getMomentPostLikes, getTeamMembers, likeMomentPost } from '@/api/post';
-import { getUSerCardInfo, getUserPublish } from '@/api/user';
+import { followOneUser, getUSerCardInfo, getUserPublish } from '@/api/user';
 import type { UserShowCard } from '@/api/user/types';
+import ChatAndFollowButton from '@/components/chatandfollowbutton/ChatAndFollowButton.vue';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
 import type { GroupCardData } from '@/components/groupcard/types';
 import type { MomentCardData } from '@/components/momentsactivitycard/types';
 import { SHAREOPTIONS } from '@/config';
+import { useUserStore } from '@/stores/modules/user';
 import { calculateDiffDate } from '@/utils/tool';
 import { debounce } from 'lodash';
 import { showToast } from 'vant';
@@ -14,6 +16,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter()
 const route = useRoute()
+const useUser = useUserStore()
 const user_id = computed(() => Number(route.params.id))
 // handle top 
 const topState = reactive({
@@ -215,7 +218,7 @@ const handleClickMomment = async (postId: number) => {
 }
 /** 点赞动态 */
 const handleClickLike = debounce(async (postId: number) => {
-    const user_info = userInfoCardData.value?.user_info
+    const user_info = useUser.userInfo
     const config = {
         post_id: postId,
         user_id: user_info?.user_id!,
@@ -247,6 +250,47 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
 }
 
 
+// 判断是否关注
+
+const isMyfollow = computed(() => {
+    return useUser.myFollows.data.some((item: any) => item.user_id === user_id.value)
+})
+const isFollow = ref(isMyfollow.value)
+
+const handleClickChat = () => {
+    const user_info = useUser.userInfo
+    if (!user_info) {
+        showToast('请先登录')
+        router.push('/login')
+        return
+    }
+    router.push('/chat/' + user_id.value)
+}
+/** 点击关注 */
+const handleClickFollow = debounce(async () => {
+
+    // 我的信息
+    const user_info = useUser.userInfo
+    if (!user_info) {
+        showToast('请先登录')
+        router.push('/login')
+        return
+    }
+    const config = {
+        follower_id: user_info?.user_id!,
+        following_id: user_id.value,
+        action: 1
+    }
+    try {
+        await followOneUser(config)
+        useUser.getMyFollows()
+        isFollow.value = true
+
+
+    } catch (error) {
+        showToast('操作失败');
+    }
+}, 200)
 
 </script>
 <template>
@@ -325,7 +369,7 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
 
             <div class="my-2">
                 <h4 class="text-gray-500 text-sm">我的发布</h4>
-                <van-empty class="my-4" v-if="!cardData.length" description="未发布任何内容" />
+                <van-empty class="my-4 bg-white rounded-md" v-if="!cardData.length" description="未发布任何内容" />
                 <template v-for="moment in cardData" :key="moment.id">
                     <PublishCard class="my-4" :card-data="moment.data" :type="moment.type"
                         @click="() => handleCardClick(moment.data.card_id, moment.type)"
@@ -340,6 +384,9 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
                 v-model:error="commentState.error" :comment-list="commentList"
                 :handle-comment-on-load="handleCommentOnLoad" />
         </van-action-sheet>
+
+        <ChatAndFollowButton left-btn-type="primary" right-btn-type="success" :is-follow="isFollow"
+            @left-btn-click="handleClickChat" @right-btn-click="handleClickFollow" />
     </main>
 </template>
 <style scoped></style>

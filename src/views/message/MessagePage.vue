@@ -167,7 +167,7 @@ function generateMessageCardInfo(message: MessageContent, userId: number) {
             </van-notice-bar>
         </van-sticky>
         <van-pull-refresh class="flex-1" v-model="loading" @refresh="onRefresh">
-            <div class="system-info flex  p-2 m-2 border shadow-md" @click="router.push('/aboutMoment')">
+            <div class="system-info flex  p-2 m-2 border shadow-md" @click="router.push('/aboutmoment')">
                 <van-icon name="bell" class="flex-none " size="40" color="#7fab50" />
                 <div class="mx-2 flex-1">
                     <div class="flex justify-between mb-1">

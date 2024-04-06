@@ -34,7 +34,6 @@ onActivated(() => {
     // 获取用户喜欢的帖子列表
     getMylikePostList();
 
-    console.log(momentCardList.value);
 })
 
 const router = useRouter();
@@ -105,11 +104,13 @@ const getMomentComments = async () => {
             createTime: created_at,
         }
     });
-    if (momentComments[post_id]) {
+    
+    if (momentComments[post_id] && momentComments[post_id].length <= commemtPageState.value.total) {
         momentComments[post_id] = momentComments[post_id].concat(comments);
-    } else {
+    } else if (!momentComments[post_id]) {
         momentComments[post_id] = comments;
     }
+
     commentList.value = momentComments[post_id];
     commemtPageState.value.total = res.data.totalCount!;
     commemtPageState.value.pageSize = res.data.pageSize!;
@@ -226,7 +227,7 @@ const handleClickMomment = async (postId: number) => {
     innitState();
     commemtPageState.value.post_id = postId;
     commentList.value = [];
-    await getMomentComments()
+    // await getMomentComments()
 }
 /** 点赞动态 */
 const handleClickLike = debounce(async (postId: number) => {

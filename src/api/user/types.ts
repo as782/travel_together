@@ -42,14 +42,25 @@ export interface UserInfo {
 /** 用户卡片 */
 export interface UserCard extends Pick<UserInfo, 'user_id' | 'avatar_url' | 'nickname'> {}
 
+/** 用户页展示卡片 */
+export interface UserShowCard {
+  user_info: UserCard
+  bio: string
+  tags: Tags[]
+  created_at: string
+  likeCount: number
+  followCount: number
+  fansCount: number
+}
+
 /**分页查询参数 */
 export interface PageParams {
   page?: number
   limit?: number
   theme_id?: number // 分主题查询
-  user_id?: number 
+  user_id?: number
   post_id?: number // 用于区分用户发布的内容
-  follow?:boolean //  用于区分世界，和关注的动态
+  follow?: boolean //  用于区分世界，和关注的动态
 }
 /**分页查询返回结果 */
 export interface PageResult<T> {
@@ -59,8 +70,6 @@ export interface PageResult<T> {
   totalPages?: number
   currentPage?: number
 }
-
- 
 
 /** 获取用户发布参数 */
 export interface GetUserPostsParams extends PageParams {

@@ -7,9 +7,9 @@ import type {
   PageResult,
   TagResult,
   UserInfo,
+  UserShowCard
 } from './types'
 import type { GroupDetail } from '../post/types'
- 
 
 /**
  * 实现登录
@@ -48,6 +48,12 @@ export const getUserInfo = (userId: number) => {
     }
   })
 }
+
+/** 获取用户卡片信息 */
+export const getUSerCardInfo = (userId: number) => {
+  return http.get<Result<UserShowCard>>('users/getUserCardInfo/' + userId)
+}
+
 /** 标签列表 */
 export const getTagList = () => {
   return http.get<Result<TagResult>>('/tags/getTagsList')
@@ -93,6 +99,6 @@ export const getUserLikeGroup = (userId: number) => {
 }
 
 /** 用户加入的小队 */
-export const getUserJoinedGroups = (data:{user_id:number,page:number,limit:number})=>{
-  return http.post<Result<PageResult<GroupDetail>>>('/users/getJoinedTeams',data)
+export const getUserJoinedGroups = (data: { user_id: number; page: number; limit: number }) => {
+  return http.post<Result<PageResult<GroupDetail>>>('/users/getJoinedTeams', data)
 }

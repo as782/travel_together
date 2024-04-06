@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getInteractiveNotifications } from '@/api/message';
-import { MessageType, type GetInteractiveNotificationsResponse } from '@/api/message/types';
+import { MessageType } from '@/api/message/types';
 import type { UserCard } from '@/api/user/types';
 import { useUserStore } from '@/stores/modules/user';
 import { getTimeDiffString } from '@/utils/tool';
@@ -10,12 +10,12 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const useUser = useUserStore();
 
-const list = ref<number[]>([]);
+ 
 const loading = ref(false);
 const finished = ref(false);
 onMounted(() => {
     getLastNotice()
-    list.value = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+     
 });
 
 const pageState = ref({
@@ -58,7 +58,8 @@ const noticeList = ref<NoticeCardData[]>([])
 /** 获取通知 */
 const getLastNotice = async () => {
     if (pageState.value.total != -1 && pageState.value.total <= (pageState.value.currentPage - 1) * pageState.value.pageSize) {
-        return
+         await Promise.resolve()
+        
     }
     const params = {
         page: pageState.value.currentPage,
@@ -98,7 +99,7 @@ const handleClickMessage = (message: NoticeCardData) => {
     } else if (type === 'team_post') {
         router.push(`/groupDetail/${message.related_id}`)
     } else if (type === 'user') {
-        router.push(`/user/${message.related_id}`)
+        router.push(`/user/${message.senderInfo.user_id}`)
     }
 }
 </script>

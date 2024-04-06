@@ -20,7 +20,7 @@ const themeVars = reactive({
 <template>
     <main class="bg-slate-200">
         <van-config-provider :theme-vars="themeVars">
-            <van-nav-bar fixed :z-index="999" left-arrow @click-left="router.back()">
+            <van-nav-bar v-if="IsShowNavbar" fixed :z-index="999" left-arrow @click-left="router.back()">
                 <template #title>
                     <span>
                         {{ IsShowTitle ? route.meta?.title : '' }}

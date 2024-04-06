@@ -93,27 +93,15 @@ const mainRoutes: RouteRecordRaw[] = [
           refresh: true
         },
         component: () => import('../views/mine/MyProfile.vue')
-      },
-      {
-        path: '/user/:id',
-        name: 'user',
-        meta: {
-          title: '用户页',
-          keepAlive: false,
-          hideNavbar: true,
-          tabBar: false,
-          noToken: true,
-          refresh: true
-        },
-        component: () => import('../views/otherprofie/OtherProfile.vue')
       }
     ]
   }
 ]
 
 const pageRoutes: RouteRecordRaw[] = [
+  // 帖子详情
   {
-    path: '/groupDetail/:card_id',
+    path: '/groupDetail/:id',
     name: 'groupDetail',
     meta: {
       title: '组队详情',
@@ -138,6 +126,8 @@ const pageRoutes: RouteRecordRaw[] = [
     },
     component: () => import('../views/momentdetail/MomentDetailPage.vue')
   },
+
+  // 消息相关页面
   {
     path: '/chat/:id',
     name: 'chat',
@@ -152,12 +142,12 @@ const pageRoutes: RouteRecordRaw[] = [
     component: () => import('../views/chat/ChatPage.vue')
   },
   {
-    path: '/aboutMoment',
+    path: '/aboutmoment',
     component: SimpleLayout,
     children: [
       {
         path: '',
-        name: 'aboutMoment',
+        name: 'aboutmoment',
         meta: {
           title: '最新动态',
           keepAlive: false,
@@ -169,6 +159,26 @@ const pageRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/user/:id',
+    component: SimpleLayout,
+    children: [
+      {
+        path: '',
+        name: 'user',
+        meta: {
+          title: '用户页',
+          keepAlive: false,
+          hideNavbar: true,
+          tabBar: false,
+          noToken: true,
+          refresh: true
+        },
+        component: () => import('../views/otherprofie/OtherProfile.vue')
+      }
+    ]
+  },
+  // 我的相关页面
   {
     path: '/editprofile',
     component: SimpleLayout,
@@ -220,7 +230,6 @@ const pageRoutes: RouteRecordRaw[] = [
       }
     ]
   },
-
   {
     path: '/like',
     component: SimpleLayout,
@@ -272,6 +281,7 @@ const pageRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  // 发布相关页面
   {
     path: '/publishgroup',
     component: SimpleLayout,

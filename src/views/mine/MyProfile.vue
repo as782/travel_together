@@ -258,6 +258,8 @@ const handleShare = () => {
 const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
     if (postType === 'moment') {
         router.push('/momentdetail/' + postId)
+    }else if (postType === 'group') {
+        router.push('/groupdetail/' + postId)
     }
 }
 </script>
@@ -266,9 +268,13 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
         <div class="fixed z-50 top-0 w-full h-10 py-2 bg-transparent">
             <div class="flex justify-between">
                 <!-- 客服 -->
-                <van-icon @click="handleConnectService" class="mx-2" color="#fff" name="service-o" size="30" />
+                 <div class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+                     <van-icon @click="handleConnectService" class="mx-2" color="#fff" name="service-o" size="30" />
+                 </div>
                 <!-- 分享图标 -->
-                <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
+                 <div class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+                     <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
+                 </div>
             </div>
             <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
         </div>

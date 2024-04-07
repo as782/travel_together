@@ -102,3 +102,12 @@ export const getUserLikeGroup = (userId: number) => {
 export const getUserJoinedGroups = (data: { user_id: number; page: number; limit: number }) => {
   return http.post<Result<PageResult<GroupDetail>>>('/users/getJoinedTeams', data)
 }
+
+/** 加入小队 */
+export const joinTeam = (data: { user_id: number; post_id: number }) => {
+  return http.post<Result<any>>(`/users/joinTeam`, data)
+}
+/** 退出小队 */
+export const quitTeam = (data: { user_id: number; post_id: number }) => {
+  return http.post<Result<any>>(`/users/quitTeam`, data)
+}

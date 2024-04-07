@@ -161,7 +161,7 @@ const handleClickLike = debounce(async () => {
     try {
         const res = await likeMomentPost(config);
         likeCount.value += res.data
-        isLike.value = true
+        isLike.value =  res.data > 0
         showToast(res.msg);
     } catch (error) {
         showToast("操作失败");

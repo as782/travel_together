@@ -1,120 +1,177 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { showImagePreview } from 'vant';
+import { showImagePreview, showToast } from 'vant';
 import type { CommentDetail, CommentState } from '@/components/commentplane/types';
-import type { MomentCardData } from '@/components/momentsactivitycard/types';
+import CommentPlane from '@/components/commentplane/CommentPlane.vue';
+import TopNav from '@/components/topnav/TopNav.vue';
+import { SHAREOPTIONS } from '@/config';
+import type { MomentDetail } from '@/api/post/types';
+import { getMomentPostDetail, likeMomentPost } from '@/api/post';
+import { useUserStore } from '@/stores/modules/user';
+import { debounce } from 'lodash';
+import { followOneUser } from '@/api/user';
+import { getTimeDiffString } from '@/utils/tool';
+import type { UserCard } from '@/api/user/types';
+import { publishDynamicPostComment } from '@/api/comment';
 
 const route = useRoute();
 const router = useRouter();
+const post_id = Number(route.params.id);
+
+// 发帖用户 和我的信息
+const useUser = useUserStore();
+const postUserInfo = ref<UserCard>();
+
+//#region 关注相关
+// 是否我的关注
+const isMyFollow = computed(() => {
+    return useUser.myFollows.data.some((item) => {
+        return item.user_id === postUserInfo.value?.user_id
+    })
+})
+/** 改变关注状态 */
+const isFollow = ref(isMyFollow)
+/** 点击关注 */
+const handleClickFollow = debounce(async () => {
+
+    // 我的信息
+    const user_info = useUser.userInfo
+
+    const config = {
+        follower_id: user_info?.user_id!,
+        following_id: postUserInfo.value?.user_id!,
+        action: 1
+    }
+    try {
+        await followOneUser(config)
+        useUser.getMyFollows()
+        isFollow.value = true
+
+
+    } catch (error) {
+        showToast('操作失败');
+    }
+}, 200)
+//#endregion
+
+// 去往用户主页
+const handleGoUserHome = () => {
+    const user_id = postUserInfo.value?.user_id
+    const myId = useUser.userInfo?.user_id
+    if (user_id === myId) return router.push('/mine')
+
+    router.push(`/user/${postUserInfo.value?.user_id}`)
+}
 
 onMounted(() => {
-    queryMomentDetail(Number(route.params.id))
+    queryMomentDetail(post_id)
 })
 
-let momentData = ref<MomentCardData>({
-    id: 0,
-    user: {
-        id: 0,
-        nickName: '',
-        avatar: '',
-    },
-    content: {
-        desc: '',
-        images: [],
-    },
-    createTime: '',
-    commentCount: 0,
-    likeCount: 0,
-    isFollow: true,
-})
+/** 动态数据 */
+let momentData = ref<MomentDetail>()
 
 // img预览
 const handleImgclick = (index: number) => {
     showImagePreview({
-        images: momentData.value.content.images,
+        images: momentData.value?.images.map(e => e.image_url) || [],
         startPosition: index,
     });
-    console.log(index);
+
 }
 
-const queryMomentDetail = async (momentId: number) => {
-    let data = {
-        id: momentId,
-        user: {
-            id: 1,
-            nickName: 'user1',
-            avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
-        },
-        content: {
-            desc: `这是一条动态---${momentId}`,
-            images: [
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-                'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
-            ]
-        },
-        createTime: '169120120102',
-        commentCount: 10,
-        likeCount: 20,
-        isFollow: false,
+/** 查询帖子动态数据 */
+const queryMomentDetail = async (postId: number) => {
+    try {
+        let result = await getMomentPostDetail(postId)
+        momentData.value = result.data
+        postUserInfo.value = result.data.user_info
+        likeCount.value = result.data.like_userIds?.length
+        isLike.value = result.data.like_userIds?.some(e => e === useUser.userInfo?.user_id)
+    } catch (error) {
+        console.error(error);
     }
-    let res: MomentCardData = await new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(data)
-        }, 200);
-    })
-    momentData.value = res;
 }
 
+//#region 评论相关
 const commentState = reactive<CommentState>({
     loading: false,
     finished: false,
     error: false,
 })
-const commentList = reactive<CommentDetail[]>([])
+const commentList = ref<CommentDetail[]>([])
 
 const handleCommentOnLoad = () => {
     setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-            commentList.push({
-                id: i + Math.random(),
-                user: {
-                    id: i + Math.random(),
-                    nickname: `平台用户${i % 2 + Math.random().toFixed(2)}`,
-                    avatar: 'https://img.yzcdn.cn/vant/cat.jpeg',
-
-                },
-                createTime: new Date().getTime().toFixed(2).toString().substring(0, 2),
-                content: '星宿老仙派别，无量剑派？'
-            });
-        }
-
+        commentList.value = momentData.value?.comments?.map(moment => ({
+            comment_id: moment.comment_id,
+            content: moment.content,
+            createTime: moment.created_at,
+            userInfo: moment.user_info!
+        })).reverse() || []
         commentState.loading = false;
-
-        if (commentList.length > 40) {
-            commentState.finished = true;
-        }
+        commentState.finished = true
     }, 1000)
 }
+
+// 评论
+/** 评论内容*/
+const inputTextContent = ref<string>()
+/** 发表评论函数 */
+const publichComment = async () => {
+    if (!inputTextContent.value) {
+        showToast('大哥，说点啥再评论吧！')
+        return
+    }
+    try {
+        const content = inputTextContent.value
+        const user_id = useUser.userInfo?.user_id!
+        const params = {
+            user_id,
+            post_id,
+            content
+        }
+        const result = await publishDynamicPostComment(params)
+        showToast(result.msg)
+        const date = new Date()
+        commentList.value.unshift({
+            comment_id: date.getTime(),
+            content:inputTextContent.value,
+            createTime: date.toISOString(),
+            userInfo: useUser.userInfo!
+        })
+        inputTextContent.value = ''
+    } catch (error) {
+        console.error(error)
+    }
+
+}
+
+//#endregion
+
+// 点赞相关
+const likeCount = ref<number>()
+const isLike = ref<boolean>()
+/** 点赞动态 */
+const handleClickLike = debounce(async () => {
+    const config = {
+        post_id: post_id,
+        user_id: useUser.userInfo?.user_id!,
+    }
+    try {
+        const res = await likeMomentPost(config);
+        likeCount.value += res.data
+        isLike.value = true
+        showToast(res.msg);
+    } catch (error) {
+        showToast("操作失败");
+    }
+}, 200)
 
 
 const shareSheet = reactive({
     isShow: false,
-    shareOptions: [
-        [
-            { name: '微信', icon: 'wechat' },
-            { name: '朋友圈', icon: 'wechat-moments' },
-            { name: '微博', icon: 'weibo' },
-            { name: 'QQ', icon: 'qq' },
-        ],
-        [
-            { name: '复制链接', icon: 'link' },
-            { name: '分享海报', icon: 'poster' },
-            { name: '二维码', icon: 'qrcode' },
-            { name: '小程序码', icon: 'weapp-qrcode' },
-        ],
-    ]
+    shareOptions: SHAREOPTIONS
 })
 </script>
 <template>
@@ -123,22 +180,23 @@ const shareSheet = reactive({
             <template #left>
                 <div class="flex items-center  w-full ">
                     <van-icon name="arrow-left" size="20" @click="router.back()" />
-                    <div class="user-info flex  items-center w-52 ml-2">
+                    <div class="user-info flex  items-center w-52 ml-2" @click="handleGoUserHome">
                         <van-image class="flex-none w-8 aspect-square" round fit="cover"
-                            :src="momentData?.user?.avatar" />
+                            :src="momentData?.user_info?.avatar_url" />
                         <div class="flex flex-col   flex-1 ml-2">
-                            <h4 class="text-sm text-left">{{ momentData?.user?.nickName }}</h4>
-                            <span class="user-state text-xs text-left text-gray-500">{{ momentData?.createTime
-                                }}小时前</span>
+                            <h4 class="text-sm text-left">{{ momentData?.user_info?.nickname }}</h4>
+                            <span class="user-state text-xs text-left text-gray-500">
+                                {{ getTimeDiffString(momentData?.created_at) }}</span>
                         </div>
                     </div>
                 </div>
 
             </template>
             <template #right>
-                <van-button v-if="!momentData?.isFollow" class="w-20" icon="plus" type="primary" round plain
-                    size="small">关注</van-button>
-                <van-button v-else class="w-20" type="success" round plain size="small">私信</van-button>
+                <van-button v-if="!isFollow" @click="handleClickFollow" class="w-20" icon="plus" type="primary" round
+                    plain size="small">关注</van-button>
+                <van-button v-else @click="$router.push(`/chat/${postUserInfo?.user_id}`)" class="w-20" type="success"
+                    round plain size="small">私信</van-button>
             </template>
         </TopNav>
 
@@ -147,17 +205,17 @@ const shareSheet = reactive({
         <div class="p-2">
             <div class="moment-content">
                 <div class="content-text">
-                    {{ momentData?.content?.desc }}
+                    {{ momentData?.content }}
                 </div>
                 <div class="content-resource my-2 columns-2 flex-wrap">
-                    <template v-for="(img, index) in momentData?.content?.images" :key="img">
+                    <template v-for="(img, index) in momentData?.images" :key="img.image_id">
                         <van-image @click="() => handleImgclick(index)" class="w-full aspect-square rounded-lg" round
-                            :radius="8" fit="cover" :src="img" />
+                            :radius="8" fit="cover" :src="img.image_url" />
                     </template>
                 </div>
             </div>
             <van-divider :style="{ color: '#d3d', borderColor: '#ddf' }">
-                <h4>共40条评论</h4>
+                <h4>共{{ momentData?.comments?.length }}条评论</h4>
             </van-divider>
             <div class="moment-comment">
                 <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
@@ -167,10 +225,14 @@ const shareSheet = reactive({
         </div>
 
         <BlankSpaceBox height="50px" />
-        <van-action-bar>
+        <van-action-bar class="p-2">
 
-            <van-field class="flex-1" left-icon="edit" placeholder="说点啥" />
-            <van-action-bar-icon class="flex-none" icon="like-o" text="喜欢" @click="() => { console.log('d') }" />
+            <van-field class="flex-1 m-2 rounded-md outline outline-1 outline-blue-300" v-model="inputTextContent"
+                left-icon="edit" placeholder="说点啥" />
+
+            <van-button class="flex-none" type="primary" @click="publichComment">发送</van-button>
+            <van-action-bar-icon class="flex-none" color="#1989fa" :icon="isLike ? 'like' : 'like-o'"
+                :text="`${likeCount}`" @click="handleClickLike" />
             <van-action-bar-icon class="flex-none" icon="share-o" text="分享" @click="() => shareSheet.isShow = true" />
 
         </van-action-bar>

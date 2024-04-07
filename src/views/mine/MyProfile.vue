@@ -29,8 +29,8 @@ onActivated(() => {
 
     user_id && getMyPublish(user_id);
     // 获取用户的喜欢关注, 粉丝, 如果数据状态为idle则执行
-    myFans.value.status === 'idle' && getMyFollows();
-    myFollows.value.status === 'idle' && getMyFans();
+    myFans.value.status === 'idle' && getMyFans();
+    myFollows.value.status === 'idle' && getMyFollows();
     // 获取用户喜欢的帖子列表
     getMylikePostList();
 
@@ -104,7 +104,7 @@ const getMomentComments = async () => {
             createTime: created_at,
         }
     });
-    
+
     if (momentComments[post_id] && momentComments[post_id].length <= commemtPageState.value.total) {
         momentComments[post_id] = momentComments[post_id].concat(comments);
     } else if (!momentComments[post_id]) {
@@ -257,7 +257,7 @@ const handleShare = () => {
 /** 点击卡片 */
 const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
     if (postType === 'moment') {
-        router.push('/momentdetail' + postId)
+        router.push('/momentdetail/' + postId)
     }
 }
 </script>

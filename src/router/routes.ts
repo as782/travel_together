@@ -76,7 +76,7 @@ const mainRoutes: RouteRecordRaw[] = [
           keepAlive: true,
           hideNavbar: false,
           tabBar: true,
-          noToken: true,
+          noToken: false,
           refresh: false
         },
         component: () => import('../views/message/MessagePage.vue')
@@ -89,7 +89,7 @@ const mainRoutes: RouteRecordRaw[] = [
           keepAlive: true,
           hideNavbar: true,
           tabBar: true,
-          noToken: true,
+          noToken: false,
           refresh: true
         },
         component: () => import('../views/mine/MyProfile.vue')

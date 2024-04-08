@@ -18,6 +18,8 @@ declare module 'vue' {
     IconEcosystem: typeof import('./src/components/icons/IconEcosystem.vue')['default']
     IconSupport: typeof import('./src/components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./src/components/icons/IconTooling.vue')['default']
+    Loading: typeof import('./src/components/virtuallist/Loading.vue')['default']
+    LoadingCompnent: typeof import('./src/components/virtuallist/LoadingCompnent.vue')['default']
     MomentsActivityCard: typeof import('./src/components/momentsactivitycard/MomentsActivityCard.vue')['default']
     PublishCard: typeof import('./src/components/publishcard/PublishCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
@@ -64,5 +66,6 @@ declare module 'vue' {
     VanTag: typeof import('vant/es')['Tag']
     VanTextEllipsis: typeof import('vant/es')['TextEllipsis']
     VanUploader: typeof import('vant/es')['Uploader']
+    VirtualList: typeof import('./src/components/virtuallist/VirtualList.vue')['default']
   }
 }

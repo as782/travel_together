@@ -17,7 +17,7 @@ const { cardData } = defineProps<IProps>()
         <div class="flex flex-col">
             <div class="card-center rounded-lg my-1">
                 <!-- 宣传image -->
-                <img class="w-full aspect-auto rounded-lg" :src="cardData?.cover_imgUrl" alt="">
+                <van-image class="w-full h-40 aspect-auto rounded-lg" :src="cardData?.cover_imgUrl" alt=""/>
             </div>
             <div class="active-desc w-full ">
                 <p class="text-sm  ">

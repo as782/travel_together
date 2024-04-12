@@ -273,7 +273,7 @@ const handleClickMomment =async (post_id: number) => {
             <template #right>
                 <div class="">
                     <van-config-provider :theme-vars="{ searchPadding: 0 }">
-                        <van-search shape="round" />
+                        <van-search shape="round" @focus="()=>router.push('/search')"/>
                     </van-config-provider>
                 </div>
             </template>

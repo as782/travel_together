@@ -22,7 +22,9 @@ const service: AxiosInstance = axios.create({
 // 请求拦截
 service.interceptors.request.use(
   (config) => {
-    config.headers!.Authorization = localStorage.getItem('token')
+    console.log(config.headers);
+    
+    config.headers!.Authorization = authHelper.getToken()
     return config
   },
   (error: AxiosError) => {

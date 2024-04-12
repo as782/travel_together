@@ -32,8 +32,9 @@ const getMyFollowList = async () => {
         emptyState.value.imgType = 'error';
     }
     cardDataList.value = follows.data.map((item: UserInfo) => {
-        const { avatar_url, nickname, birthday, gender } = item
+        const { user_id,avatar_url, nickname, birthday, gender } = item
         return {
+            user_id,
             avatar: avatar_url,
             nickname,
             birthday: `${calculateAge(birthday)}`,

@@ -93,7 +93,32 @@ const mainRoutes: RouteRecordRaw[] = [
           refresh: true
         },
         component: () => import('../views/mine/MyProfile.vue')
-      }
+      },
+      {
+        path: 'search',
+        name: 'search',
+        meta: {
+          title: '搜索',
+          keepAlive: false,
+          hideNavbar: true,
+          tabBar: false,
+          noToken: true,
+          refresh: false
+        },
+        component: () => import('../views/search/SearchPage.vue')
+      },
+      {
+        path: 'searchresult',
+        name: 'searchresult',
+        meta: {
+          title: '搜索结果',
+          hideNavbar: true,
+          tabBar: false,
+          noToken: true,
+          refresh: false
+        },
+        component: () => import('../views/search/SearchResultPage.vue')
+      },
     ]
   }
 ]

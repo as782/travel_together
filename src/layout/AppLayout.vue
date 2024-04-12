@@ -66,7 +66,7 @@ const showMask = ref(false);
                 <template #right>
                     <div v-if="route.name == 'home'">
                         <van-config-provider :theme-vars="{ searchPadding: 0 }">
-                            <van-search shape="round" />
+                            <van-search shape="round" @focus="()=>router.push('/search')"/>
                         </van-config-provider>
                     </div>
                 </template>

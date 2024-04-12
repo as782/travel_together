@@ -37,6 +37,7 @@ const getMyFollowList = async () => {
         const { user_id, avatar_url, nickname, birthday, gender } = item;
         const fansId = user_id;
         return {
+            user_id,
             avatar: avatar_url,
             nickname,
             birthday: `${calculateAge(birthday)}`,

@@ -57,7 +57,7 @@ export const publishMomentPost = (data: PublishMomentParams) => {
 }
 /** 修改动态 */
 export const modifyMomentPost = (data:UpdateMomentParams) => {
-  return http.post<Result<any>>('/post/modifyDynamicPost', data)
+  return http.post<Result<any>>('/post/updateDynamicPost', data)
 }
 
 /** 发布组队 */
@@ -67,5 +67,5 @@ export const publishTeamPost = (data: PublishGroupParams ) => {
 
 /** 修改组队 */
 export const modifyTeamPost = (data: UpdateGroupParams) => {
-  return http.post<Result<any>>('/post/modifyTeamPost', data)
+  return http.post<Result<any>>('/post/updateTeamPost', data)
 }

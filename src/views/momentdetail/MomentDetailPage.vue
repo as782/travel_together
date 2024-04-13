@@ -111,7 +111,7 @@ const handleCommentOnLoad = () => {
         })).reverse() || []
         commentState.loading = false;
         commentState.finished = true
-    }, 1000)
+    }, 100)
 }
 
 // 评论

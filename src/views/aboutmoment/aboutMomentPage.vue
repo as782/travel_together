@@ -95,7 +95,7 @@ const onLoad = async () => {
 const handleClickMessage = (message: NoticeCardData) => {
     const type = cickSwicth(message.related_type)
     if (type === 'dynamic_post') {
-        router.push(`/dynamicDetail/${message.related_id}`)
+        router.push(`/momentDetail/${message.related_id}`)
     } else if (type === 'team_post') {
         router.push(`/groupDetail/${message.related_id}`)
     } else if (type === 'user') {

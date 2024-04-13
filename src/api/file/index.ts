@@ -5,7 +5,7 @@ export const deleteTeamPostImage = (imageIds: number[]) => {
   return http.post<Result>('/file/deleteTeamPostImage', { image_ids: imageIds })
 }
 
-/** 删除行程图片 */
+/** 删除行程图片 */ // imgage_ids 后端改为了 通过post_id 删除
 export const deleteItineraryImage = (imageIds: number[]) => {
   return http.post<Result>('/file/deleteItinerary', { image_ids: imageIds })
 }

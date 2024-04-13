@@ -308,7 +308,7 @@ const pageRoutes: RouteRecordRaw[] = [
   },
   // 发布相关页面
   {
-    path: '/publishgroup',
+    path: '/publishgroup/:editId(\\d+)?',
     component: SimpleLayout,
     children: [
       {
@@ -325,7 +325,7 @@ const pageRoutes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/publishmoment',
+    path: '/publishmoment/:editId(\\d+)?',
     component: SimpleLayout,
     children: [
       {

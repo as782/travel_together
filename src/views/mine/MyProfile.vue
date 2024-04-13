@@ -258,8 +258,24 @@ const handleShare = () => {
 const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
     if (postType === 'moment') {
         router.push('/momentdetail/' + postId)
-    }else if (postType === 'group') {
+    } else if (postType === 'group') {
         router.push('/groupdetail/' + postId)
+    }
+}
+// 删除
+const handleDeletePost = (postId: number, postType: 'moment' | 'group') => {
+    if (postType === 'moment') {
+        confirm('确认删除吗')
+    } else if (postType === 'group') {
+       confirm('确认删除吗')
+    }
+}
+// 去编辑
+const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
+    if (postType === 'moment') {
+        router.push('/publishmoment/' + postId)
+    } else if (postType === 'group') {
+        router.push('/publishgroup/' + postId)
     }
 }
 </script>
@@ -268,13 +284,15 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
         <div class="fixed z-50 top-0 w-full h-10 py-2 bg-transparent">
             <div class="flex justify-between">
                 <!-- 客服 -->
-                 <div class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
-                     <van-icon @click="handleConnectService" class="mx-2" color="#fff" name="service-o" size="30" />
-                 </div>
+                <div
+                    class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+                    <van-icon @click="handleConnectService" class="mx-2" color="#fff" name="service-o" size="30" />
+                </div>
                 <!-- 分享图标 -->
-                 <div class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
-                     <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
-                 </div>
+                <div
+                    class=" bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+                    <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
+                </div>
             </div>
             <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
         </div>
@@ -365,7 +383,14 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
                     <PublishCard class="my-4" :card-data="moment.data" :type="moment.type"
                         @click="() => handleCardClick(moment.data.card_id, moment.type)"
                         @click-like="() => handleClickLike(moment.data.card_id)" @click-share="handleShare"
-                        @click-comment="() => handleClickMomment(moment.data.card_id)" />
+                        @click-comment="() => handleClickMomment(moment.data.card_id)">
+                        <template #edit>
+                            <van-icon class=" m-2 shadow-md rounded-md" name="delete-o" size="25"
+                                @click.stop="() => handleDeletePost(moment.data.card_id, moment.type)" />
+                            <van-icon class=" m-2 shadow-md rounded-md" name="edit" size="25"
+                                @click.stop="() => handleEditPost(moment.data.card_id, moment.type)" />
+                        </template>
+                    </PublishCard>
                 </template>
             </div>
             <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />

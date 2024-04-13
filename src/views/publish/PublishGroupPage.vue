@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { deleteItineraryImage, deleteTeamPostImage } from '@/api/file';
-import { publishTeamPost } from '@/api/post';
-import type { PublishGroupParams, Themes } from '@/api/post/types';
+import { getTeamPostDetail, modifyTeamPost, publishTeamPost } from '@/api/post';
+import type { PublishGroupParams, Themes, UpdateGroupParams } from '@/api/post/types';
 import { uploadImageFile, type UploadImagPlayload } from '@/api/upload';
 import { useThemesStore } from '@/stores/modules/themes';
 import { useUserStore } from '@/stores/modules/user';
 import { areaList } from '@vant/area-data';
-import { onMounted } from 'vue';
+import { showToast } from 'vant';
+import { computed, onMounted } from 'vue';
 import { reactive, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 onMounted(() => {
     // 获取主题
@@ -18,8 +19,37 @@ onMounted(() => {
 
 //-------------------- 初始化相关 -------------------//
 const route = useRoute()
+const router = useRouter()
 const useThemes = useThemesStore()
 const userStore = useUserStore()
+const isEdit = computed(() => Boolean(route.params?.editId))
+/**获取帖子详情 */
+const getGroupPostDetail = async (postId: number) => {
+    try {
+        const result = await getTeamPostDetail(postId)
+        const { user_id, title, description, duration_day,
+            estimated_expense, gender_requirement, payment_method,
+            start_location, end_location, team_size, theme_id, images, itinerary } = result.data
+        formData.user_id = user_id
+        formData.title = title
+        formData.description = description
+        formData.duration_day = duration_day
+        formData.estimated_expense = estimated_expense
+        formData.gender_requirement = gender_requirement
+        formData.payment_method = payment_method
+        formData.start_location = start_location
+        formData.end_location = end_location
+        formData.team_size = team_size
+        formData.theme_id = theme_id
+        formData.image_urls = images.map(item => item.image_url)
+        formData.itinerary = itinerary
+
+        fileList.value = fileListFactory(images, 'image')
+        itineraryFileList.value = fileListFactory([{ image_id: postId, image_url: itinerary }], 'itinerary')
+    } catch (error) {
+        console.error(error)
+    }
+}
 
 
 /** 表单数据 **/
@@ -61,9 +91,7 @@ const onConfirmAddress = (area: any) => {
 //-------------- 图片文件上传相关逻辑 --------------//
 onMounted(() => {
     if (route.params?.editId) {
-        const images = [{ images_id: 1, image_url: 'https://images.dog.ceo/breeds/weimaraner/n02092339_7224.jpg' }]
-        fileList.value = fileListFactory(images, 'image')
-        itineraryFileList.value = fileListFactory(images, 'itinerary')
+        getGroupPostDetail(Number(route.params.editId))
     }
 })
 /** 帖子轮播图预览列表 */
@@ -78,7 +106,7 @@ const deleteItineraryImgIds = ref<number[]>([])
 
 /**
  * fileList 工厂
- * @param arr images[] {images_id, image_url}
+ * @param arr images[] {image_id, image_url}
  * @param type itinerary | images
  */
 const fileListFactory = (arr: any, type: string) => {
@@ -87,9 +115,9 @@ const fileListFactory = (arr: any, type: string) => {
             url: img.image_url,
             beforeDelete: () => {
                 if (type == 'itinerary') {
-                    deleteItineraryImgIds.value.push(img.images_id)
+                    deleteItineraryImgIds.value.push(img.image_id)
                 } else {
-                    deleteImgIds.value.push(img.images_id)
+                    deleteImgIds.value.push(img.image_id)
                 }
                 return true
             }
@@ -114,48 +142,66 @@ const deleteImgForIds = async (ids: number[], type: string) => {
 
 
 //-------------- 表单提交相关逻辑 --------------//
-const onSubmit = async (values: any) => {
-    console.log('submit', values);
-    const formFileData = new FormData();
-    const itineraryFormFileData = new FormData();
+const onSubmit = async () => {
+    try {
+        const formFileData = new FormData();
+        const itineraryFormFileData = new FormData();
 
-    fileList.value.forEach((item: any) => {
-        formFileData.append('team_post', item.file);
-    })
-    itineraryFileList.value.forEach((item: any) => {
-        itineraryFormFileData.append('initerary', item.file);
-    })
+        fileList.value.forEach((item: any) => {
+            formFileData.append('team_post', item.file);
+        })
+        itineraryFileList.value.forEach((item: any) => {
+            itineraryFormFileData.append('initerary', item.file);
+        })
 
-    const playload: UploadImagPlayload = {
-        filedata: formFileData,
-        flag: "team_post",
-        username: userStore.userInfo!.username,
+        const playload: UploadImagPlayload = {
+            filedata: formFileData,
+            flag: "team_post",
+            username: userStore.userInfo!.username,
+        }
+        const itineraryPlayload: UploadImagPlayload = {
+            filedata: itineraryFormFileData,
+            flag: "initerary",
+            username: userStore.userInfo!.username,
+        }
+
+        // 删除图片 $$ 在编辑时才需要删除数据库中的图片
+        deleteImgIds.value.length && await deleteImgForIds(deleteImgIds.value, 'images')
+        deleteItineraryImgIds.value.length && await deleteImgForIds(deleteItineraryImgIds.value, 'itinerary')
+
+        // 上传图片
+        let result = await uploadImageFile(playload)
+        formData.image_urls = result.data.fileUrls
+
+        // 上传行程图片
+        let initeraryResult = await uploadImageFile(itineraryPlayload)
+        formData.itinerary = initeraryResult.data.fileUrls[0]
+
+        // 提交表单
+
+        const publishParams: PublishGroupParams = {
+            ...formData,
+            user_id: userStore.userInfo?.user_id!,
+        }
+
+        if (isEdit.value) {
+            const params: UpdateGroupParams = {
+                post_id: Number(route.params.editId),
+                ...formData,
+                user_id: userStore.userInfo?.user_id!,
+            }
+            await modifyTeamPost(params)
+            showToast("修改成功")
+        } else {
+
+            await publishTeamPost(publishParams)
+            showToast("发布成功")
+        }
+        router.back()
+    } catch (error) {
+        console.error(error);
+        showToast("发布失败，请重试")
     }
-    const itineraryPlayload: UploadImagPlayload = {
-        filedata: itineraryFormFileData,
-        flag: "initerary",
-        username: userStore.userInfo!.username,
-    }
-
-    // 删除图片 $$ 在编辑时才需要删除数据库中的图片
-    deleteImgIds.value.length && await deleteImgForIds(deleteImgIds.value, 'images')
-    deleteItineraryImgIds.value.length && await deleteImgForIds(deleteItineraryImgIds.value, 'itinerary')
-
-    // 上传图片
-    let result = await uploadImageFile(playload)
-    formData.image_urls = result.data.fileUrls
-
-    // 上传行程图片
-    let initeraryResult = await uploadImageFile(itineraryPlayload)
-    formData.itinerary = initeraryResult.data.fileUrls[0]
-
-    // 提交表单
-
-    const publishParams: PublishGroupParams = {
-        ...formData,
-        user_id: userStore.userInfo?.user_id!,
-    }
-    await publishTeamPost(publishParams)
 }
 
 </script>
@@ -223,7 +269,7 @@ const onSubmit = async (values: any) => {
                     <template #input>
                         <van-radio-group v-model="formData.theme_id" direction="horizontal">
                             <van-radio v-for="theme in postThemes" :key="theme.theme_id" :name="theme.theme_id">{{
-            theme.theme_name }}</van-radio>
+                                theme.theme_name }}</van-radio>
                         </van-radio-group>
                     </template>
                 </van-field>

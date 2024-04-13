@@ -1,30 +1,48 @@
 <script setup lang="ts">
 import { showToast } from 'vant';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { uploadImageFile, type UploadImagPlayload } from '@/api/upload/index';
 import { deleteDynamicPostImage } from '@/api/file/index';
-import { publishMomentPost } from '@/api/post/index';
+import { getMomentPostDetail, modifyMomentPost, publishMomentPost } from '@/api/post/index';
 import { useUserStore } from '@/stores/modules/user';
+import type { MomentDetail } from '@/api/post/types';
 
 
 onMounted(() => {
     if (route.params?.editId) {
+        queryMomentDetail(Number(route.params.editId))
 
-        fileList.value = [{ images_id: 1, image_url: 'https://images.dog.ceo/breeds/weimaraner/n02092339_7224.jpg' }].map((e) => {
+    }
+})
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const momentData = ref<MomentDetail>()
+
+const isEdit = computed(() => Boolean(route.params?.editId))
+/** 查询帖子动态数据 */
+const queryMomentDetail = async (postId: number) => {
+    try {
+        let result = await getMomentPostDetail(postId)
+        momentData.value = result.data
+        fileList.value = momentData.value.images.map((e) => {
             return {
                 url: e.image_url,
                 beforeDelete: () => {
-                    deleteImgIds.value.push(e.images_id)
+                    deleteImgIds.value.push(e.image_id)
                     return true
                 }
             }
         })
+        textarea.value = momentData.value.content
+
+    } catch (error) {
+        console.error(error);
     }
-})
-const route = useRoute()
-const userStore = useUserStore()
+}
 
 /** 删除图片根据ids */
 const deleteImgForIds = async (ids: number[]) => {
@@ -59,22 +77,38 @@ const onSubmit = async () => {
         // 删除图片 $$ 在编辑时才需要删除数据库中的图片
         deleteImgIds.value.length && await deleteImgForIds(deleteImgIds.value)
 
+        let image_urls: string[] = []
         // 上传图片
+
         let result = await uploadImageFile(playload)
-        const image_urls = result.data.fileUrls
+        image_urls = result.data.fileUrls
+
 
         const publishParams = {
             user_id: userStore.userInfo?.user_id!,
             content: textarea.value,
             image_urls,
-        }
 
-        // 提交发布
-        await publishMomentPost(publishParams)
-        showToast("发布成功")
+        }
+        if (isEdit.value) {
+            const params = {
+                user_id: userStore.userInfo?.user_id!,
+                content: textarea.value,
+                image_urls,
+                dynamic_post_id: Number(route.params.editId)
+            }
+            await modifyMomentPost(params)
+            showToast("修改成功")
+
+        } else {
+            // 提交发布
+            await publishMomentPost(publishParams)
+            showToast("发布成功")
+        }
+        router.back()
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         showToast("发布失败，请重试")
     }
 

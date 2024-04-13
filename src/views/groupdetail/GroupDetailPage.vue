@@ -12,7 +12,7 @@ import type { GroupDetail, JoinTeamInfo } from '@/api/post/types';
 import { getTeamMembers, getTeamPostDetail, likeTeamPost } from '@/api/post';
 import type { UserCard } from '@/api/user/types';
 import { debounce } from 'lodash';
-import { getUSerCardInfo } from '@/api/user';
+import { getUSerCardInfo, joinTeam } from '@/api/user';
 
 const router = useRouter();
 const route = useRoute();
@@ -200,8 +200,19 @@ const handleClickLike = debounce(async () => {
 //#endregion
 
 // 加入小队
-const handleJoinThisTeam = () => {
-    alert('加入了')
+const handleJoinThisTeam = async () => {
+
+    try {
+        const params = {
+            user_id: useUser.userInfo?.user_id!,
+            post_id: post_id
+        }
+        await joinTeam(params)
+        showToast("加入成功")
+    } catch (error) {
+        console.error(error)
+        showToast("加入失败")
+    }
 }
 </script>
 

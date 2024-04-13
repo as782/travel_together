@@ -37,8 +37,9 @@ const { list: momentList, containerProps: containerMomentList, wrapperProps: wra
 })
 
 
-const handleGotoDetal = (cardinfo: any) => {
-    console.log('cardinfo', cardinfo);
+const handleGotoDetal = (card_id: any) => {
+
+    router.push(`/groupDetail/${card_id}`);
 
 }
 
@@ -220,7 +221,7 @@ const handleClickMomment = async (post_id: number) => {
                 <div v-bind="containerUserList" style="height: 100vh">
                     <div v-bind="wrapUserList">
                         <div class="p-2 " v-for="cardData in userList" :key="cardData.data.nickname">
-                            <UserCard class="rounded-md bg-slate-300 hover:bg-blue-400" :card-data="cardData.data" />
+                            <UserCard @click="$router.push(`/user/${cardData.data.user_id}`)" class="rounded-md bg-slate-300 hover:bg-blue-400" :card-data="cardData.data" />
                         </div>
                     </div>
                 </div>

@@ -133,7 +133,7 @@ const pageRoutes: RouteRecordRaw[] = [
       keepAlive: false,
       hideNavbar: true,
       tabBar: false,
-      noToken: false,
+      noToken: true,
       refresh: true
     },
     component: () => import('../views/groupdetail/GroupDetailPage.vue')

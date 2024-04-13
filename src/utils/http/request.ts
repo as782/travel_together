@@ -3,6 +3,7 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
 import { showNotify } from 'vant'
 import authHelper from '../auth/authHelper'
+import router from '@/router'
 
 // 统一后端返回数据格式
 export interface Result<T = any> {
@@ -22,8 +23,6 @@ const service: AxiosInstance = axios.create({
 // 请求拦截
 service.interceptors.request.use(
   (config) => {
-    console.log(config.headers);
-    
     config.headers!.Authorization = authHelper.getToken()
     return config
   },
@@ -46,15 +45,20 @@ service.interceptors.response.use(
       code: error.response.status,
       msg: error.response.statusText
     }
+    console.log('HTTP 网络错误', error.response)
 
     switch (code) {
       case 401:
         message = msg
         // token 校验失败
         authHelper.clearSessionStorage()
+        //  跳转登录
+        router.push({ path: '/login' })
         break
       case 403:
         message = msg
+        //  跳转登录
+        router.push({ path: '/login' })
         break
       case 404:
         message = msg

@@ -21,7 +21,7 @@ const toLogin = () => {
         <div class="w-full h-10 flex justify-between items-center p-2 text-white">
             <!-- 左边游客登陆按钮， 右边联系客服按钮客服   -->
             <div class="h-full flex justify-center  items-center">
-                <span class="text-sm ">游客登录</span>
+                <span class="text-sm " @click="$router.push('/home')">游客登录</span>
             </div>
             <div class="h-full flex justify-center  items-center">
                 <van-icon name="service" size="20" />

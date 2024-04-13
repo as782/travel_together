@@ -8,7 +8,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   console.log(to.meta, authHelper.getToken())
-
+  
   if (!to.meta.noToken && !authHelper.getToken()) {
     next({ path: '/login' })
   } else {

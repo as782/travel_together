@@ -3,8 +3,8 @@ import { computed, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
- 
- 
+
+
 // 是否显示顶部导航栏
 const IsShowNavbar = computed(() => !route.meta?.hideNavbar);
 // 标题是否显示
@@ -29,8 +29,15 @@ const themeVars = reactive({
             </van-nav-bar>
 
             <BlankSpaceBox v-if="IsShowNavbar" :height="themeVars.navBarHeight" />
+            <RouterView>
+                <template #default="{ Component }">
+                    <transition name="slide-fadein-left">
+                        <component :key="$route.path" :is="Component" />
+                    </transition>
+                    
+                </template>
+            </RouterView>
 
-            <RouterView />
 
         </van-config-provider>
     </main>

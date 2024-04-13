@@ -10,7 +10,8 @@ const router = useRouter();
 // 定义枚举类型
 type TabBarItem = 'home' | 'moment' | 'message' | 'mine';
 
-const tabActive = ref<TabBarItem>('home');
+const tabActive = ref<TabBarItem>(route.path.split('/')[1] as TabBarItem);
+ 
 
 // 修改顶部导航栏高度, 底部TabBar高度和文字颜色
 const themeVars = reactive({
@@ -66,7 +67,7 @@ const showMask = ref(false);
                 <template #right>
                     <div v-if="route.name == 'home'">
                         <van-config-provider :theme-vars="{ searchPadding: 0 }">
-                            <van-search shape="round" @focus="()=>router.push('/search')"/>
+                            <van-search shape="round" @focus="() => router.push('/search')" />
                         </van-config-provider>
                     </div>
                 </template>
@@ -79,10 +80,12 @@ const showMask = ref(false);
                 <van-pull-refresh :disabled="!IsCanRefresh" v-model="refreshLoading" @refresh="onRefresh">
                     <RouterView>
                         <template #default="{ Component }">
-                            <keep-alive>
-                                <component :key="route.name || route.path" v-if="route.meta.keepAlive"
-                                    :is="Component" />
-                            </keep-alive>
+                            <transition name="slide-fadein-up">
+                                <keep-alive>
+                                    <component :key="route.name || route.path" v-if="route.meta.keepAlive"
+                                        :is="Component" />
+                                </keep-alive>
+                            </transition>
                             <component :key="route.name || route.path" v-if="!route.meta.keepAlive" :is="Component" />
                         </template>
                     </RouterView>
@@ -91,10 +94,15 @@ const showMask = ref(false);
 
             <BlankSpaceBox v-if="IsShowTabbar" :height="themeVars.tabBarHeight" />
 
-            <van-tabbar v-if="IsShowTabbar" v-model="tabActive">
+            <van-tabbar   v-if="IsShowTabbar" v-model="tabActive">
                 <van-tabbar-item to="/home" name="home" icon="home-o">首页</van-tabbar-item>
                 <van-tabbar-item to="/moment" name="moment" icon="circle">圈子</van-tabbar-item>
-                <van-tabbar-item name="publish" icon="add-o" @click="showMask = true">发布</van-tabbar-item>
+                <div class="w-14  aspect-square rounded-full flex justify-center items-center bg-white   -translate-y-3" @click="showMask = true">
+                    <div class="flex flex-col items-center">
+                        <van-icon name="add-o" size="20"></van-icon>
+                        <span class="text-xs">发布</span>
+                    </div>
+                </div>
                 <van-tabbar-item to="/message" name="message" icon="chat-o">消息</van-tabbar-item>
                 <van-tabbar-item to="/mine" name="mine" icon="user-circle-o">我的</van-tabbar-item>
             </van-tabbar>

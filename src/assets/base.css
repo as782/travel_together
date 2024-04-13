@@ -101,3 +101,51 @@ body {
   text-overflow: ellipsis;
   /* 使用省略号截断溢出文本 */
 }
+
+
+.slide-fadein-up-enter-active,
+.slide-fadein-up-leave-active,
+.slide-fadein-down-enter-active,
+.slide-fadein-down-leave-active {
+  transition:
+    opacity 0.4s,
+    transform 0.4s,
+    -webkit-transform 0.4s;
+}
+
+.slide-fadein-up-enter-from,
+.slide-fadein-down-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-fadein-up-leave-to,
+.slide-fadein-down-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.slide-fadein-up-enter-active,
+.slide-fadein-up-leave-active,
+.slide-fadein-down-enter-active,
+.slide-fadein-down-leave-active {
+  transition:
+    opacity 0.3s,
+    transform 0.4s,
+    -webkit-transform 0.4s;
+}
+
+.slide-fadein-left-enter-from,
+.slide-fadein-down-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-fadein-left-leave-to,
+.slide-fadein-down-enter-from {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+
+ 
+ 

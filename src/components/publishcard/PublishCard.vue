@@ -24,9 +24,9 @@ const { cardData, type } = defineProps<IProps>();
         <template v-if="type === 'moment'">
             <div class="card-content py-1">
                 <div class="content-text">
-                    <p>
-                        {{ cardData?.content?.desc }}
-                    </p>
+                    <van-text-ellipsis :content="cardData?.content?.desc " rows="5" expand-text="展开" @click.stop
+                    collapse-text="收起" />
+                     
                 </div>
                 <div class="content-resource my-2 columns-2 flex-wrap">
                     <template v-for="img in cardData?.content?.images" :key="img.image_id">

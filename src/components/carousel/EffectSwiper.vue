@@ -8,9 +8,10 @@ import 'swiper/css';
 
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
+import { useRouter } from 'vue-router';
 
 const modules = [EffectCoverflow, Autoplay];
-
+const router = useRouter();
 
 interface IProps {
     slideList: SlideInfo[];
@@ -27,7 +28,11 @@ const initialSlide = computed(() => {
 
 
 const handleClickSlide = (item: SlideInfo) => {
-    console.log(item);
+    if(item.name?.includes("team")){
+        router.push(`/groupDetail/${item.id}`)
+    }else{
+        router.push(`/momentDetail/${item.id}`)
+    }
 
 }
 </script>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { ref } from 'vue';
 import EffectSwiper from '@/components/carousel/EffectSwiper.vue';
 import GroupInfoCard from '@/components/groupcard/GroupInfoCard.vue';
 import type { SlideInfo } from '@/components/carousel/types';
@@ -8,11 +8,11 @@ import { useRouter } from 'vue-router';
 import { debounce } from 'lodash';
 import type { PageParams } from '@/api/user/types';
 import type { Themes } from '@/api/post/types'
-import { getTeamMembers, getTeamPosts } from '@/api/post/index'
+import { getRecommendPosts, getTeamMembers, getTeamPosts } from '@/api/post/index'
 import { useThemesStore } from '@/stores/modules/themes';
 import { onMounted } from 'vue';
 import { watch } from 'vue';
- 
+
 
 // type PageState = { currentPage: number, pageSize: number, total: number }
 type ListState = { loading: boolean, finished: boolean, error: boolean }
@@ -26,54 +26,26 @@ type ListState = { loading: boolean, finished: boolean, error: boolean }
 onMounted(() => {
     getCategoryList()
     listOnloadHandle()
+    getRecomendList()
 })
 
 const router = useRouter();
 //------------ 轮播图处理 ---------------//
 /**  轮播的图片数据， 点击后需要考虑路由跳转 */
-const imgList = reactive<SlideInfo[]>([
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-1.jpg',
-        id: 1,
-        name: '1'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-2.jpg',
-        id: 2,
-        name: '2'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-3.jpg',
-        id: 3,
-        name: '3'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-4.jpg',
-        id: 4,
-        name: '4'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-5.jpg',
-        id: 5,
-        name: '5'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-6.jpg',
-        id: 6,
-        name: '6'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-7.jpg',
-        id: 7,
-        name: '7'
-    },
-    {
-        imgUrl: 'https://swiperjs.com/demos/images/nature-7.jpg',
-        id: 8,
-        name: '8'
-    }
+const getRecomendList = async () => {
+    const result = await getRecommendPosts()
+    imgList.value = result.data.map((item: any) => {
+        return {
+            imgUrl: item.images[0]?.image_url || '',
+            id: item.post_id,
+            name: item.type + '-' + item.post_id
+        }
+    })
+}
 
-]);
+//------------ 组队贴处理 ---------------//
+
+const imgList = ref<SlideInfo[]>([]);
 
 //----------- 组队贴分类筛选-----------//
 /**  分类列表 */
@@ -225,7 +197,7 @@ const handleGotoDetal = (card_id: number) => {
     <main class="bg-white">
         <EffectSwiper :slideList="imgList"></EffectSwiper>
         <van-sticky :offset-top="40">
-            <van-tabs v-model:active="vanTabActive" class="mt-2 "   >
+            <van-tabs v-model:active="vanTabActive" class="mt-2 ">
                 <van-tab v-for="item in categoryList " :name="item.theme_id" :key="item.theme_id"
                     title-inactive-color="#ddd" title-active-color="#000">
                     <template #title>

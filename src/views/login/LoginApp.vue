@@ -41,16 +41,16 @@ const toLogin = () => {
 
         <!-- login button -->
         <div class="w-full fixed bottom-0 mb-20">
-            <div class="w-5/6 mx-auto mt-10">
+            <!-- <div class="w-5/6 mx-auto mt-10">
                 <van-button icon="wechat" block to="/accountLogin">微信登录</van-button>
 
-            </div>
+            </div> -->
             <div class="w-5/6 mx-auto mt-5">
-                <van-button icon="lock" color="#0feff0" block @Click="toLogin" >账号密码登录</van-button>
+                <van-button icon="lock" color="#8d7f9347" block @Click="toLogin" >账号密码登录</van-button>
             </div>
             <div class="flex w-4/6 mx-auto mt-5  ">
                 <van-checkbox v-model="checked" icon-size="18px">
-                    <span class="text-gray-600" style="font-size: 12px;"> 我已阅读并同意 <a class="text-blue-600"
+                    <span class="text-white" style="font-size: 12px;"> 我已阅读并同意 <a class="text-blue-600"
                             href="#">《用户协议》</a> 和 <a class="text-blue-600" href="#">《隐私政策》</a></span>
                 </van-checkbox>
             </div>

@@ -1,5 +1,14 @@
 import { http, type Result } from '@/utils/http/request'
-import type { GroupDetail, JoinTeamInfo, MomentDetail, PublishGroupParams, PublishMomentParams, Themes, UpdateGroupParams, UpdateMomentParams } from './types'
+import type {
+  GroupDetail,
+  JoinTeamInfo,
+  MomentDetail,
+  PublishGroupParams,
+  PublishMomentParams,
+  Themes,
+  UpdateGroupParams,
+  UpdateMomentParams
+} from './types'
 import type { PageParams, PageResult } from '../user/types'
 
 // 获取小队成员
@@ -56,16 +65,31 @@ export const publishMomentPost = (data: PublishMomentParams) => {
   return http.post<Result<any>>('/post/publishDynamicPost', data)
 }
 /** 修改动态 */
-export const modifyMomentPost = (data:UpdateMomentParams) => {
+export const modifyMomentPost = (data: UpdateMomentParams) => {
   return http.post<Result<any>>('/post/updateDynamicPost', data)
 }
 
 /** 发布组队 */
-export const publishTeamPost = (data: PublishGroupParams ) => {
+export const publishTeamPost = (data: PublishGroupParams) => {
   return http.post<Result<any>>('/post/publishTeamPost', data)
 }
 
 /** 修改组队 */
 export const modifyTeamPost = (data: UpdateGroupParams) => {
   return http.post<Result<any>>('/post/updateTeamPost', data)
+}
+
+/** 删除动态 */
+export const deleteMomentPost = (postId: number) => {
+  return http.post<Result<any>>(`/post/deleteDynamicPost/`, { dynamic_post_id: postId })
+}
+
+/** 删除组队 */
+export const deleteTeamPost = (postId: number) => {
+  return http.post<Result<any>>(`/post/deleteTeamPost/`, { post_id: postId })
+}
+
+/** 获取首页推荐 */
+export const getRecommendPosts = () => {
+  return http.get<Result<any[]>>('/post/getRecommendPosts')
 }

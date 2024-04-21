@@ -129,8 +129,33 @@ export const useUserStore = defineStore(
     function resetUserSotre() {
       userInfo.value = null
       token.value = ''
+      myFans.value={
+        status: 'idle',
+        error: null,
+        data: []
+      }
+      myFollows.value ={
+        status: 'idle',
+        error: null,
+        data: []
+      }
+        myLikeGroupPostList.value ={
+          status: 'idle',
+          error: null,
+          data: []
+        }
+        myLikeMomentPostList.value ={
+          status: 'idle',
+          error: null,
+          data: []
+       }
       authHelper.removeSessionStorage('token')
       authHelper.removeSessionStorage('userInfo')
+      authHelper.removeSessionStorage('myFans')
+      authHelper.removeSessionStorage('myFollows')
+      authHelper.removeSessionStorage('myLikeGroupPostList')
+      authHelper.removeSessionStorage('myLikeMomentPostList')
+      sessionStorage.clear()
     }
     return {
       userInfo,

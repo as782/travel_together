@@ -29,8 +29,8 @@ onActivated(() => {
 
     user_id && getMyPublish(user_id);
     // 获取用户的喜欢关注, 粉丝, 如果数据状态为idle则执行
-    myFans.value.status === 'idle' && getMyFans();
-    myFollows.value.status === 'idle' && getMyFollows();
+     getMyFans();
+     getMyFollows();
     // 获取用户喜欢的帖子列表
     getMylikePostList();
 

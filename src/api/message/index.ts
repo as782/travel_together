@@ -15,6 +15,10 @@ export const getNotification = (user_id: number) => {
   return http.get<Result<GetMessagesResponse>>(`/msg/getNotification/${user_id}`)
 }
 
+export const getGonggao = () => {
+  return http.get<Result<any>>('/msg/getNotice')
+}
+
 /** 发送消息 */
 export const sendMsg = (data: SendMessageParams) => {
   return http.post<Result<any>>('/msg/sendMessage', data)
@@ -22,15 +26,24 @@ export const sendMsg = (data: SendMessageParams) => {
 
 /** 获取两者之间的消息 */
 export const getMessageBetweenForUser = (data: GetMessagesParams) => {
-  return http.post<Result<MsgPageResult<GetMessagesParamsResponse>>>(`/msg/getMessagesBetweenUsers`, data)
+  return http.post<Result<MsgPageResult<GetMessagesParamsResponse>>>(
+    `/msg/getMessagesBetweenUsers`,
+    data
+  )
 }
 
 /** 获取互动通知 */
 export const getInteractiveNotifications = (data: GetInteractiveNotificationsParams) => {
-  return http.post<Result<MsgPageResult<GetInteractiveNotificationsResponse>>>(`/msg/getUserInteractiveNotifications`, data)
+  return http.post<Result<MsgPageResult<GetInteractiveNotificationsResponse>>>(
+    `/msg/getUserInteractiveNotifications`,
+    data
+  )
 }
 
 /** 获取管理员通知 */
 export const getAdminNotifications = (data: GetAdminNotificationsParams) => {
-  return http.post<Result<MsgPageResult<GetAdminNotificationsResponse>>>(`/msg/getUserAdminNotifications`, data)
+  return http.post<Result<MsgPageResult<GetAdminNotificationsResponse>>>(
+    `/msg/getUserAdminNotifications`,
+    data
+  )
 }

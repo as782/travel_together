@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/modules/user';
 import { useMessageStore } from '@/stores/modules/message';
 import { watch } from 'vue';
 import { getTimeDiffString } from '@/utils/tool';
+import { getGonggao } from '@/api/message';
 
 onMounted(() => {
     getNotice()
@@ -41,15 +42,28 @@ watch(aboutMessage, () => {
     interactiveNoticeList.value = interactiveNotice.map((message: any) => generateMessageCardInfo(message, userStore.userInfo?.user_id!))
 
     // 处理管理员通知
-    const adminNotice = aboutMessage.value.admin_notifications.map((message: any) => generateMessageCardInfo(message, userStore.userInfo?.user_id!))
-    adminNoticeList.value = adminNotice;
+    // const adminNotice = aboutMessage.value.admin_notifications.map((message: any) => generateMessageCardInfo(message, userStore.userInfo?.user_id!))
+    // adminNoticeList.value = adminNotice;
 })
 // 先获取通知
 const getNotice = async () => {
-    if (useMessage.pageNotices.status === 'idle') {
-        await useMessage.getNotice(userStore.userInfo?.user_id!)
-    }
+
+    await useMessage.getNotice(userStore.userInfo?.user_id!)
+
     aboutMessage.value = useMessage.pageNotices.data
+
+   const result =  await getGonggao()
+   adminNoticeList.value =  result.data.list.map((item:any) => {
+        return {
+            id: item.id,
+            content: item.content,
+            userInfo: {
+                user_id: item.admin_id,
+                nickname: item.userInfo.nickname,
+                avatar_url: item.userInfo.avatar_url
+            }
+        }
+    })
 
 }
 
@@ -182,12 +196,12 @@ function generateMessageCardInfo(message: MessageContent, userId: number) {
                     <p v-if="interactiveNoticeList[0]?.type === MessageType.TEAM_ACTIVITY_POST_COMMENT"
                         class="text-xs truncate text-left text-gray-500">
                         <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 评论了你的组队：{{
-            interactiveNoticeList[0]?.content }}
+                            interactiveNoticeList[0]?.content }}
                     </p>
                     <p v-if="interactiveNoticeList[0]?.type === MessageType.DYNAMIC_POST_COMMENT"
                         class="text-xs truncate text-left text-gray-500">
                         <span class="text-blue-300">{{ interactiveNoticeList[0]?.userInfo?.nickname }}</span> 评论了你的动态：{{
-            interactiveNoticeList[0]?.content }}
+                            interactiveNoticeList[0]?.content }}
                     </p>
                     <p v-if="interactiveNoticeList[0]?.type === MessageType.TEAM_ACTIVITY_POST_LIKE"
                         class="text-xs truncate text-left text-gray-500">

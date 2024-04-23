@@ -118,7 +118,7 @@ const mainRoutes: RouteRecordRaw[] = [
           refresh: false
         },
         component: () => import('../views/search/SearchResultPage.vue')
-      },
+      }
     ]
   }
 ]

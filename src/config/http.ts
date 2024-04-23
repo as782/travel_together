@@ -6,7 +6,5 @@ const CONTENT_TYPE = {
   application_json: 'application/json;charset=UTF-8',
   form_data: 'application/x-www-form-urlencoded;charset=UTF-8'
 }
- 
 
 export { BASE_URL, TIMEOUT, CONTENT_TYPE }
-

@@ -6,7 +6,6 @@ import { getMomentPostDetail, getTeamPostDetail } from '@/api/post'
 import { getUserJoinedGroups } from '@/api/user'
 
 const usePostStore = defineStore('post', () => {
- 
   /** 我的页面 我喜欢的组队详情列表 */
   const myLikeGroupPostDetailList = ref<DataState<GroupDetail[]>>({
     status: 'idle',
@@ -27,7 +26,6 @@ const usePostStore = defineStore('post', () => {
     data: []
   })
 
- 
   /**获取我的页面 我喜欢的组队详情列表 */
   const getMyLikeGroupPostDetailList = async (postIds: number[]) => {
     //  通过id发起多个请求
@@ -85,11 +83,10 @@ const usePostStore = defineStore('post', () => {
     }
   }
   return {
- 
     myLikeGroupPostDetailList,
     myLikeMomentPostDetailList,
     myJoinGroupPostDetailList,
- 
+
     getMyLikeGroupPostDetailList,
     getMyLikeMomentPostDetailList,
     getMyJoinedGroupPostDetailList

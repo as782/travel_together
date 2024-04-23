@@ -1,5 +1,5 @@
 interface CardData {
-  user_id:number
+  user_id: number
   avatar: string
   nickname: string
   birthday: string

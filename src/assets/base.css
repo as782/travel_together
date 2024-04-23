@@ -102,7 +102,6 @@ body {
   /* 使用省略号截断溢出文本 */
 }
 
-
 .slide-fadein-up-enter-active,
 .slide-fadein-up-leave-active,
 .slide-fadein-down-enter-active,
@@ -145,7 +144,3 @@ body {
   transform: translateX(-20px);
   opacity: 0;
 }
-
-
- 
- 

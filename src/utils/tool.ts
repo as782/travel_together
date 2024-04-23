@@ -42,50 +42,49 @@ function calculateAge(dateString: string | undefined): number {
  */
 function getTimeDiffString(dateString: string | undefined): string {
   if (!dateString) {
-    return 'Invalid date';
+    return 'Invalid date'
   }
 
   // 解析给定的时间字符串
-  const givenDate: Date = new Date(dateString);
-  const currentDate: Date = new Date();
+  const givenDate: Date = new Date(dateString)
+  const currentDate: Date = new Date()
 
   // 计算时间差异（以毫秒为单位）
-  const timeDifference: number = currentDate.getTime() - givenDate.getTime();
+  const timeDifference: number = currentDate.getTime() - givenDate.getTime()
 
   // 转换为秒
-  const secondsDifference: number = Math.floor(timeDifference / 1000);
+  const secondsDifference: number = Math.floor(timeDifference / 1000)
   if (secondsDifference < 60) {
-    return secondsDifference + '秒前';
+    return secondsDifference + '秒前'
   }
 
   // 转换为分钟
-  const minutesDifference: number = Math.floor(secondsDifference / 60);
+  const minutesDifference: number = Math.floor(secondsDifference / 60)
   if (minutesDifference < 60) {
-    return minutesDifference + '分钟前';
+    return minutesDifference + '分钟前'
   }
 
   // 转换为小时
-  const hoursDifference: number = Math.floor(minutesDifference / 60);
+  const hoursDifference: number = Math.floor(minutesDifference / 60)
   if (hoursDifference < 24) {
-    return hoursDifference + '小时前';
+    return hoursDifference + '小时前'
   }
 
   // 转换为天数
-  const daysDifference: number = Math.floor(hoursDifference / 24);
+  const daysDifference: number = Math.floor(hoursDifference / 24)
   if (daysDifference < 30) {
-    return daysDifference + '天前';
+    return daysDifference + '天前'
   }
 
   // 转换为月份
-  const monthsDifference: number = Math.floor(daysDifference / 30);
+  const monthsDifference: number = Math.floor(daysDifference / 30)
   if (monthsDifference < 12) {
-    return monthsDifference + '月前';
+    return monthsDifference + '月前'
   }
 
   // 转换为年份
-  const yearsDifference: number = Math.floor(monthsDifference / 12);
-  return yearsDifference + '年前';
+  const yearsDifference: number = Math.floor(monthsDifference / 12)
+  return yearsDifference + '年前'
 }
 
-
-export { calculateDiffDate , calculateAge,getTimeDiffString}
+export { calculateDiffDate, calculateAge, getTimeDiffString }

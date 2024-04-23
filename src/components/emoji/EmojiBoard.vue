@@ -1,13 +1,16 @@
 <template>
-  <div class="w-full p-2   max-h-80"> 
-    <ul @click="handleEmojiClick" class="flex flex-col  max-h-80 overflow-y-scroll">
+  <div class="w-full p-2 max-h-80">
+    <ul
+      @click="handleEmojiClick"
+      class="flex flex-col max-h-80 overflow-y-scroll"
+    >
       <li
-      class="flex justify-around my-1"
+        class="flex justify-around my-1"
         v-for="(emojis, row) in EMOJIS"
         :key="row"
       >
         <span
-        class="w-8 h-8 text-center text-2xl cursor-pointer"
+          class="w-8 h-8 text-center text-2xl cursor-pointer"
           v-for="(emoji, col) in emojis"
           :key="col"
           :data-row="row"
@@ -21,7 +24,7 @@
 
 <script setup lang="ts">
 import EMOJIS from './emoji'
- 
+
 const selectEmoji = defineModel()
 const emit = defineEmits(['clickEmoji'])
 const handleEmojiClick = (event: MouseEvent) => {

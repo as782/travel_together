@@ -8,7 +8,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-
   if (!to.meta.noToken && !authHelper.getToken()) {
     showToast({ message: '请先登录' })
     next({ path: '/login' })

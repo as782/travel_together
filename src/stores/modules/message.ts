@@ -74,7 +74,6 @@ export const useMessageStore = defineStore(
         key: 'pageNotices',
         storage: sessionStorage,
         paths: ['pageNotices']
-        
       }
     ]
   }

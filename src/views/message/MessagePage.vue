@@ -97,7 +97,6 @@ function groupMessagesByUserId(messages: MessageContent[], bySender: boolean) {
         group.push(message);
         groups.set(key, group);
     });
-    console.log('groups', groups);
 
     return groups;
 }

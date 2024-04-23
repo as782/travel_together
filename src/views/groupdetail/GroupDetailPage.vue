@@ -235,8 +235,8 @@ const handleJoinThisTeam = async () => {
                 <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
             </div>
             <van-swipe :autoplay="3000" lazy-render>
-                <van-swipe-item @click="() => handleImgclick(index)" v-for="(image, index) in imgList" :key="image.id">
-                    <img :src="image.imgUrl" class=" object-cover" />
+                <van-swipe-item class="h-96" @click="() => handleImgclick(index)" v-for="(image, index) in imgList" :key="image.id">
+                    <img :src="image.imgUrl" class="w-96 h-96 object-cover" />
                 </van-swipe-item>
             </van-swipe>
             <div class="desc p-2 bg-white">

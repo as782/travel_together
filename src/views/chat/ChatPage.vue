@@ -7,22 +7,24 @@ import BlankSpaceBox from '@/components/blankspacebox/BlankSpaceBox.vue'
 import MessageCard from './MessageCard.vue'
 import EmojiBorad from '@/components/emoji/EmojiBoard.vue'
 
-import { useMessageStore } from '@/stores/modules/message'
+// import { useMessageStore } from '@/stores/modules/message'
 import { useUserStore } from '@/stores/modules/user'
 import { getMessageBetweenForUser, sendMsg } from '@/api/message'
 import { type GetMessagesParamsResponse, Role, MessageType } from '@/api/message/types'
 import type { UserCard } from '@/api/user/types'
+import { getUSerCardInfo } from '@/api/user'
 
 onMounted(() => {
   getChatRecord()
+
 })
 
 const route = useRoute()
 const router = useRouter()
-const useMessage = useMessageStore()
+// const useMessage = useMessageStore()
 const useUser = useUserStore()
 /** 获取对方信息 */
-const contactInfo = computed(() => useMessage.getContactedUserMap(Number(route.params.id)))
+const contactInfo = ref<UserCard>()
 /** 自己信息 */
 const userInfo = computed(() => ({
   user_id: useUser.userInfo?.user_id,
@@ -54,6 +56,15 @@ const chatRecordList = ref<ChatRecordListItem[]>([])
 const isSend = (send_id: number) => {
   return send_id === userInfo.value.user_id
 }
+/** 获取用户信息 */
+const getUserInfoCardData = async (user_id: number) => {
+  try {
+    let result = await getUSerCardInfo(user_id)
+    contactInfo.value = result.data.user_info as any
+  } catch (error) {
+    console.error(error)
+  }
+}
 /** 获取聊天记录两人 */
 const getChatRecord = async () => {
   if (
@@ -73,16 +84,17 @@ const getChatRecord = async () => {
   }
   try {
     const result = await getMessageBetweenForUser(params)
+    await getUserInfoCardData(Number(route.params.id))
     chatRecordList.value.unshift(
       ...result.data.list
         .map((item: GetMessagesParamsResponse) => {
           const issend = isSend(item.sender_id)
           const user_info = issend
             ? {
-                user_id: userInfo.value.user_id!,
-                nickname: userInfo.value.nickname!,
-                avatar_url: userInfo.value.avatar_url!
-              }
+              user_id: userInfo.value.user_id!,
+              nickname: userInfo.value.nickname!,
+              avatar_url: userInfo.value.avatar_url!
+            }
             : contactInfo.value!
           return {
             ...item,
@@ -174,14 +186,7 @@ const onRefresh = async () => {
 </script>
 <template>
   <main class="bg-white flex flex-col">
-    <van-nav-bar
-      fixed
-      :z-index="999"
-      v-if="IsShowNavbar"
-      left-text="返回"
-      left-arrow
-      @click-left="router.back()"
-    >
+    <van-nav-bar fixed :z-index="999" v-if="IsShowNavbar" left-text="返回" left-arrow @click-left="router.back()">
       <template #title>
         <span>
           {{ IsShowTitle ? contactInfo?.nickname : '' }}
@@ -189,24 +194,12 @@ const onRefresh = async () => {
       </template>
     </van-nav-bar>
     <BlankSpaceBox :height="'50px'" />
-    <van-pull-refresh
-      class="flex-1"
-      v-model="loading"
-      @refresh="onRefresh"
-    >
+    <van-pull-refresh class="flex-1" v-model="loading" @refresh="onRefresh">
       <div>
-        <template
-          v-for="chatRecord in chatRecordList"
-          :key="chatRecord.id"
-        >
-          <MessageCard
-            :user_id="chatRecord.user_info.user_id"
-            :is-send="chatRecord.isSender"
-            :content="chatRecord.content"
-            :name="chatRecord.user_info.nickname"
-            :avatar="chatRecord.user_info.avatar_url"
-            :createTime="chatRecord.created_at"
-          />
+        <template v-for="chatRecord in chatRecordList" :key="chatRecord.id">
+          <MessageCard :user_id="chatRecord.user_info.user_id" :is-send="chatRecord.isSender"
+            :content="chatRecord.content" :name="chatRecord.user_info.nickname"
+            :avatar="chatRecord.user_info.avatar_url" :createTime="chatRecord.created_at" />
         </template>
       </div>
     </van-pull-refresh>
@@ -215,43 +208,19 @@ const onRefresh = async () => {
 
     <div class="fixed bottom-0 w-full p-2 flex items-center border-t-blue-100 bg-white">
       <div class="flex mx-2">
-        <input
-          @blur="onBlur"
-          v-model="inputContent"
-          class="border border-blue-200 rounded-md mx-2 px-1"
-          type="text"
-        />
-        <van-button
-          type="primary"
-          size="small"
-          @click="sendMessage"
-          >发送</van-button
-        >
+        <input @blur="onBlur" v-model="inputContent" class="border border-blue-200 rounded-md mx-2 px-1" type="text" />
+        <van-button type="primary" size="small" @click="sendMessage">发送</van-button>
       </div>
       <div class="relative flex">
-        <van-popover
-          placement="top-end"
-          z-index="999"
-          v-model:show="showEmojiPopover"
-        >
-          <EmojiBorad
-            v-model="selectEmoji"
-            @click-emoji="handleClickEmoji"
-          />
+        <van-popover placement="top-end" z-index="999" v-model:show="showEmojiPopover">
+          <EmojiBorad v-model="selectEmoji" @click-emoji="handleClickEmoji" />
 
           <template #reference>
-            <van-icon
-              class="mx-2"
-              name="smile-o"
-              size="30"
-            />
+            <van-icon class="mx-2" name="smile-o" size="30" />
           </template>
         </van-popover>
 
-        <van-icon
-          name="add-o"
-          size="30"
-        />
+        <van-icon name="add-o" size="30" />
       </div>
     </div>
   </main>

@@ -213,6 +213,11 @@ const handleJoinThisTeam = async () => {
     showToast('加入失败')
   }
 }
+
+// 联系
+const gochat = () => {
+  router.push(`/chat/${ postUserInfo.value?.user_id}`)
+}
 </script>
 
 <template>
@@ -468,7 +473,7 @@ const handleJoinThisTeam = async () => {
           <van-action-bar-button
             color="#be99ff"
             type="warning"
-            :to="`/chat/${postUserInfo?.user_id}`"
+            @click="gochat"
             text="联系队长"
           />
           <van-action-bar-button

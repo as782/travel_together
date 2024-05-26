@@ -11,6 +11,7 @@ import ChatAndFollowButton from '@/components/chatandfollowbutton/ChatAndFollowB
 import type { CommentDetail, CommentState } from '@/components/commentplane/types'
 import type { GroupCardData } from '@/components/groupcard/types'
 import type { MomentCardData } from '@/components/momentsactivitycard/types'
+import PublishCard from '@/components/publishcard/PublishCard.vue'
 import { SHAREOPTIONS,shareSelect } from '@/config'
 import { useUserStore } from '@/stores/modules/user'
 import { calculateDiffDate } from '@/utils/tool'
@@ -131,7 +132,7 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
           time: item.duration_day
         },
         desc: item.title,
-        cover_imgUrl: item.images[0].image_url,
+        cover_imgUrl: item.images.length!==0?item.images[0]?.image_url:'',
         createTime: item.created_at
       }
 
@@ -165,6 +166,8 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
 
   // 等待所有异步操作完成后，将结果添加到 cardData 中
   const resolvedPublichList = await Promise.all(publichList)
+  console.log(resolvedPublichList);
+  
   cardData.value = resolvedPublichList
 }
 
@@ -245,7 +248,9 @@ const handleShare = () => {
 /** 点击卡片 */
 const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
   if (postType === 'moment') {
-    router.push('/momentdetail' + postId)
+    router.push('/momentdetail/' + postId)
+  }else if(postType === 'group'){
+    router.push('/groupdetail/' + postId)
   }
 }
 

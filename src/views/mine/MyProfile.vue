@@ -144,7 +144,7 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
           time: item.duration_day
         },
         desc: item.title,
-        cover_imgUrl: item.images[0].image_url,
+        cover_imgUrl: item.images[0]?.image_url,
         createTime: item.created_at
       }
 

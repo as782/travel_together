@@ -27,7 +27,7 @@ const onSubmit = async (values: any) => {
     authHelper.syncInfoToUserStore()
     buttonLoading.value = false
     resetForm()
-    router.push('/')
+    router.push('/home')
   } catch (error) {
     console.error(error)
     buttonLoading.value = false

@@ -12,7 +12,7 @@ import { useUserStore } from '@/stores/modules/user'
 import { getTeamMembers, likeMomentPost } from '@/api/post/index'
 import { followOneUser } from '@/api/user/index'
 import type { GroupCardData } from '@/components/groupcard/types'
-import { shareSelect } from '@/config'
+import { SHAREOPTIONS, shareSelect } from '@/config'
  
 const router = useRouter()
 const postStore = usePostStore()
@@ -70,28 +70,15 @@ watch(
 
 /** 点击动态卡片 */
 const handleMomentCardClick = (id: number) => {
-  console.log('momentCard click', id)
-  // router.push(`/momentDetail/${id}`);
+  // console.log('momentCard click', id)
+  router.push(`/momentDetail/${id}`);
 }
 
 // 动态卡片底部交互处理
 /** 分享弹出控制 */
 const topState = reactive({
   isShow: false,
-  shareOptions: [
-    [
-      { name: '微信', icon: 'wechat' },
-      { name: '朋友圈', icon: 'wechat-moments' },
-      { name: '微博', icon: 'weibo' },
-      { name: 'QQ', icon: 'qq' }
-    ],
-    [
-      { name: '复制链接', icon: 'link' },
-      { name: '分享海报', icon: 'poster' },
-      { name: '二维码', icon: 'qrcode' },
-      { name: '小程序码', icon: 'weapp-qrcode' }
-    ]
-  ]
+  shareOptions: SHAREOPTIONS
 })
 
 /** 点击关注 */

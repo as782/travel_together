@@ -12,7 +12,8 @@ import { useUserStore } from '@/stores/modules/user'
 import { getTeamMembers, likeMomentPost } from '@/api/post/index'
 import { followOneUser } from '@/api/user/index'
 import type { GroupCardData } from '@/components/groupcard/types'
-
+import { shareSelect } from '@/config'
+ 
 const router = useRouter()
 const postStore = usePostStore()
 const userStore = useUserStore()
@@ -235,6 +236,7 @@ const handeGroupCardClick = (card_id: number) => {
       </van-tab>
     </van-tabs>
     <van-share-sheet
+    @select="shareSelect"
       v-model:show="topState.isShow"
       title="立即分享给好友"
       :options="topState.shareOptions"

@@ -39,7 +39,7 @@ const loginRoutes: RouteRecordRaw[] = [
 const mainRoutes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/home',
+    redirect: '/login',
     component: AppLayout,
     children: [
       {

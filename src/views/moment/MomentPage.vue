@@ -6,7 +6,7 @@ import MomentsActivityCard from '@/components/momentsactivitycard/MomentsActivit
 import { useRouter } from 'vue-router'
 import CommentPlane from '@/components/commentplane/CommentPlane.vue'
 import type { CommentDetail, CommentState } from '@/components/commentplane/types'
-import { SHAREOPTIONS } from '@/config'
+import { SHAREOPTIONS ,shareSelect} from '@/config'
 import { getMomentPostComments, getMomentPosts, likeMomentPost } from '@/api/post'
 import type { PageParams } from '@/api/user/types'
 import { useUserStore } from '@/stores/modules/user'
@@ -287,7 +287,7 @@ const handleClickMomment = async (post_id: number) => {
         </van-tab>
       </template>
     </van-tabs>
-    <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
+    <van-share-sheet @select="shareSelect" v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
     <van-action-sheet class="h-96" v-model:show="commemtPlaneShow" title="评论">
       <CommentPlane v-model:loading="commentListState.loading" v-model:finished="commentListState.finished"
         v-model:error="commentListState.error" :comment-list="commentList"

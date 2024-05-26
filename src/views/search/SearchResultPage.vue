@@ -11,7 +11,7 @@ import { useUserStore } from '@/stores/modules/user'
 import { showToast } from 'vant'
 import { getMomentPostComments, likeMomentPost } from '@/api/post'
 import { followOneUser } from '@/api/user'
-import { SHAREOPTIONS } from '@/config'
+import { SHAREOPTIONS,shareSelect } from '@/config'
 import { storeToRefs } from 'pinia'
 import type { CommentDetail, CommentState } from '@/components/commentplane/types'
 
@@ -293,6 +293,7 @@ const handleClickMomment = async (post_id: number) => {
       </van-tab>
     </van-tabs>
     <van-share-sheet
+    @select="shareSelect"
       v-model:show="topState.isShow"
       title="立即分享给好友"
       :options="topState.shareOptions"

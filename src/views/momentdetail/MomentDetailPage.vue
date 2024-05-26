@@ -5,7 +5,7 @@ import { showImagePreview, showToast } from 'vant'
 import type { CommentDetail, CommentState } from '@/components/commentplane/types'
 import CommentPlane from '@/components/commentplane/CommentPlane.vue'
 import TopNav from '@/components/topnav/TopNav.vue'
-import { SHAREOPTIONS } from '@/config'
+import { SHAREOPTIONS,shareSelect } from '@/config'
 import type { MomentDetail } from '@/api/post/types'
 import { getMomentPostDetail, likeMomentPost } from '@/api/post'
 import { useUserStore } from '@/stores/modules/user'
@@ -292,6 +292,7 @@ const shareSheet = reactive({
       />
     </van-action-bar>
     <van-share-sheet
+    @select="shareSelect"
       v-model:show="shareSheet.isShow"
       title="立即分享给好友"
       :options="shareSheet.shareOptions"

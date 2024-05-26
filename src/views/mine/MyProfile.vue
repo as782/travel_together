@@ -17,11 +17,11 @@ import {
 } from '@/api/post'
 import type { MomentCardData } from '@/components/momentsactivitycard/types'
 import type { GroupCardData } from '@/components/groupcard/types'
-import { SHAREOPTIONS } from '@/config/index'
+import { SHAREOPTIONS,shareSelect } from '@/config/index'
 import { watch } from 'vue'
 import { debounce } from 'lodash'
 import { storeToRefs } from 'pinia'
-import { showConfirmDialog, showDialog, showToast } from 'vant'
+import { showConfirmDialog, showToast } from 'vant'
 import CommentPlane from '@/components/commentplane/CommentPlane.vue'
 
 onActivated(() => {
@@ -59,11 +59,12 @@ const cardShare = reactive({
   shareOptions: SHAREOPTIONS
 })
 const handleConnectService = () => {
-  router.push('/chat/12')
+  router.push('/chat/0')
 }
 const handleTopShare = () => {
   topState.isShow = true
 }
+
 
 // tags
 const tags = computed(() => {
@@ -327,7 +328,7 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
           <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
         </div>
       </div>
-      <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
+      <van-share-sheet @select="shareSelect" v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
     </div>
     <div class="up-bg-img w-full -z-10" style="height: 50vh">
       <img class="w-full h-full object-cover"
@@ -424,7 +425,8 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
           </PublishCard>
         </template>
       </div>
-      <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
+      <van-share-sheet @select="shareSelect" v-model:show="cardShare.isShow" title="立即分享给好友"
+        :options="cardShare.shareOptions" />
     </div>
     <van-action-sheet class="h-screen" v-model:show="commemtPlaneShow" title="评论">
       <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"

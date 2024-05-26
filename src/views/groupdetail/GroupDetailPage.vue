@@ -5,7 +5,7 @@ import { showImagePreview, showToast } from 'vant'
 import type { SlideInfo } from '@/components/carousel/types'
 import type { CommentState, CommentDetail } from '@/components/commentplane/types'
 import CommentPlance from '@/components/commentplane/CommentPlane.vue'
-import { SHAREOPTIONS } from '@/config'
+import { SHAREOPTIONS ,shareSelect} from '@/config'
 import { publishTeamPostComment } from '@/api/comment'
 import { useUserStore } from '@/stores/modules/user'
 import type { GroupDetail, JoinTeamInfo } from '@/api/post/types'
@@ -246,6 +246,7 @@ const handleJoinThisTeam = async () => {
           </div>
         </div>
         <van-share-sheet
+        @select="shareSelect"
           v-model:show="topState.isShow"
           title="立即分享给好友"
           :options="topState.shareOptions"

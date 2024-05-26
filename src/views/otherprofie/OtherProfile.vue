@@ -11,7 +11,7 @@ import ChatAndFollowButton from '@/components/chatandfollowbutton/ChatAndFollowB
 import type { CommentDetail, CommentState } from '@/components/commentplane/types'
 import type { GroupCardData } from '@/components/groupcard/types'
 import type { MomentCardData } from '@/components/momentsactivitycard/types'
-import { SHAREOPTIONS } from '@/config'
+import { SHAREOPTIONS,shareSelect } from '@/config'
 import { useUserStore } from '@/stores/modules/user'
 import { calculateDiffDate } from '@/utils/tool'
 import { debounce } from 'lodash'
@@ -318,6 +318,7 @@ const handleClickFollow = debounce(async () => {
         </div>
       </div>
       <van-share-sheet
+      @select="shareSelect"
         v-model:show="topState.isShow"
         title="立即分享给好友"
         :options="topState.shareOptions"
@@ -429,6 +430,7 @@ const handleClickFollow = debounce(async () => {
         </template>
       </div>
       <van-share-sheet
+      @select="shareSelect"
         v-model:show="cardShare.isShow"
         title="立即分享给好友"
         :options="cardShare.shareOptions"

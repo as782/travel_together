@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import TopNav from '@/components/topnav/TopNav.vue'
 import type { MomentCardData } from '@/components/momentsactivitycard/types/index'
 import MomentsActivityCard from '@/components/momentsactivitycard/MomentsActivityCard.vue'
@@ -24,6 +24,12 @@ const activeTab = ref('focusman')
 /** 关注和世界动态 */
 const tabs = ['focusman', 'worldman']
 const handleSwitchTab = (tabname: string) => {
+  if (tabname == 'focusman' && !userInfo) {
+    showToast('请先登录')
+    router.push('/login')
+    return
+  }
+
   activeTab.value = tabname
   cardDataList.value = []
   pageState.value = {
@@ -37,6 +43,10 @@ const handleSwitchTab = (tabname: string) => {
     finished: false
   }
 }
+onMounted(() => {
+  handleSwitchTab(tabs[1])
+  getDatalist()
+})
 
 /** 控制列表下拉状态，方便分页加载 */
 const listState = ref({
@@ -57,7 +67,7 @@ const getDatalist = async (isGetFollow: boolean = false) => {
   const config: PageParams = {
     page: pageState.value.currentPage,
     limit: pageState.value.pageSize,
-    user_id: userInfo?.user_id
+    user_id: userInfo ? userInfo.user_id : -1
   }
   if (isGetFollow) {
     config.follow = true
@@ -103,7 +113,7 @@ const listOnloadHandle = debounce(async () => {
   if (activeTab.value === 'focusman') {
     await getDatalist(true)
     pageState.value.currentPage++
-    console.log(pageState.value.currentPage)
+
   } else {
     await getDatalist()
     pageState.value.currentPage++
@@ -247,83 +257,41 @@ const handleClickMomment = async (post_id: number) => {
     <TopNav>
       <template #left>
         <div class="flex justify-center items-center w-full">
-          <span
-            :class="`${activeTab === 'focusman' ? 'tabClass active' : 'tabClass mx-3'}`"
-            @click="handleSwitchTab('focusman')"
-            >关注</span
-          >
-          <span
-            :class="`${activeTab === 'worldman' ? 'tabClass active' : 'tabClass mx-3'}`"
-            @click="handleSwitchTab('worldman')"
-            >世界</span
-          >
+          <span :class="`${activeTab === 'focusman' ? 'tabClass active' : 'tabClass mx-3'}`"
+            @click="handleSwitchTab('focusman')">关注</span>
+          <span :class="`${activeTab === 'worldman' ? 'tabClass active' : 'tabClass mx-3'}`"
+            @click="handleSwitchTab('worldman')">世界</span>
         </div>
       </template>
       <template #right>
         <div class="">
           <van-config-provider :theme-vars="{ searchPadding: 0 }">
-            <van-search
-              shape="round"
-              @focus="() => router.push('/search')"
-            />
+            <van-search shape="round" @focus="() => router.push('/search')" />
           </van-config-provider>
         </div>
       </template>
     </TopNav>
     <BlankSpaceBox :height="'50px'" />
-    <van-tabs
-      v-model:active="activeTab"
-      animated
-      :show-header="false"
-    >
-      <template
-        v-for="tabname in tabs"
-        :key="tabname"
-      >
+    <van-tabs v-model:active="activeTab" animated :show-header="false">
+      <template v-for="tabname in tabs" :key="tabname">
         <van-tab :name="tabname">
-          <van-list
-            v-model:loading="listState.loading"
-            :finished="listState.finished"
-            finished-text="没有更多了"
-            v-model:error="listState.error"
-            error-text="请求失败，点击重新加载"
-            @load="listOnloadHandle"
-          >
-            <template
-              v-for="moment in cardDataList"
-              :key="moment.card_id"
-            >
-              <MomentsActivityCard
-                class="my-2"
-                :moment-data="moment"
-                @click="() => handleCardClick(moment.card_id)"
-                @click-like="() => handleClickLike(moment.card_id)"
-                @click-share="handleShare"
+          <van-list v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"
+            v-model:error="listState.error" error-text="请求失败，点击重新加载" @load="listOnloadHandle">
+            <template v-for="moment in cardDataList" :key="moment.card_id">
+              <MomentsActivityCard class="my-2" :moment-data="moment" @click="() => handleCardClick(moment.card_id)"
+                @click-like="() => handleClickLike(moment.card_id)" @click-share="handleShare"
                 @click-comment="() => handleClickMomment(moment.card_id)"
-                @click-follow="() => handleClickFollow(moment.userInfo.user_id, moment.card_id)"
-              />
+                @click-follow="() => handleClickFollow(moment.userInfo.user_id, moment.card_id)" />
             </template>
           </van-list>
         </van-tab>
       </template>
     </van-tabs>
-    <van-share-sheet
-      v-model:show="topState.isShow"
-      title="立即分享给好友"
-      :options="topState.shareOptions"
-    />
-    <van-action-sheet
-      class="h-96"
-      v-model:show="commemtPlaneShow"
-      title="评论"
-    >
-      <CommentPlane
-        v-model:loading="commentListState.loading"
-        v-model:finished="commentListState.finished"
-        v-model:error="commentListState.error"
-        :comment-list="commentList"
-        :handle-comment-on-load="handleCommentOnLoad"
-      />
+    <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
+    <van-action-sheet class="h-96" v-model:show="commemtPlaneShow" title="评论">
+      <CommentPlane v-model:loading="commentListState.loading" v-model:finished="commentListState.finished"
+        v-model:error="commentListState.error" :comment-list="commentList"
+        :handle-comment-on-load="handleCommentOnLoad" />
     </van-action-sheet>
   </main>
 </template>

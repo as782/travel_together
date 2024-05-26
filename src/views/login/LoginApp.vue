@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { showToast } from 'vant'
+import { USER_PROTOCOL, privacyPolicy } from '@/config';
+import { showDialog, showToast } from 'vant'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 const checked = ref<Boolean>(false)
@@ -10,6 +11,32 @@ const toLogin = () => {
     return
   }
   router.push('/accountLogin')
+}
+const handleAgreement  =()=>{
+  // 弹窗文本显示
+  showDialog({
+    title: '用户协议',
+    message: USER_PROTOCOL,
+    confirmButtonText: '同意',
+    cancelButtonText: '不同意',
+  }).then(() => {
+    // on confirm
+    checked.value = true
+  })
+  
+}
+const handleAgreement1  =()=>{
+  // 弹窗文本显示
+  showDialog({
+    title: '隐私政策',
+    message: privacyPolicy,
+    confirmButtonText: '同意',
+    cancelButtonText: '不同意',
+  }).then(() => {
+    // on confirm
+    checked.value = true
+  })
+  
 }
 </script>
 <template>
@@ -81,16 +108,16 @@ const toLogin = () => {
             style="font-size: 12px"
           >
             我已阅读并同意
-            <a
-              class="text-blue-600"
-              href="#"
-              >《用户协议》</a
+            <span
+            class="text-blue-600"
+            @click.stop="handleAgreement"
+              >《用户协议》</span
             >
             和
-            <a
+            <span
               class="text-blue-600"
-              href="#"
-              >《隐私政策》</a
+              @click.stop="handleAgreement1"
+              >《隐私政策》</span
             ></span
           >
         </van-checkbox>

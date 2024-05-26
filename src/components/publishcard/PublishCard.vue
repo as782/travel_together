@@ -8,6 +8,8 @@ interface IProps {
 }
 defineEmits(['clickShare', 'clickLike', 'clickComment'])
 const { cardData, type } = defineProps<IProps>()
+ 
+
 </script>
 
 <template>
@@ -15,6 +17,11 @@ const { cardData, type } = defineProps<IProps>()
     <div class="top-time flex items-center relative">
       <i class="w-2 h-2 rounded-full bg-black"></i>
       <span class="ml-2 text-black text-lg">{{ cardData?.createTime.slice(0, 10) }}</span>
+
+      <!-- 审核状态 0 1 2  -->
+      <van-tag v-if="cardData?.status === 2" type="warning" class="ml-2 absolute right-0">审核中</van-tag>
+      <van-tag v-else-if="cardData?.status === 1" type="success" class="ml-2 absolute right-0">审核通过</van-tag>
+      <van-tag v-else-if="cardData?.status === 0" type="danger" class="ml-2 absolute right-0">审核拒绝</van-tag>
       <div class="flex absolute right-0">
         <slot name="edit"></slot>
       </div>
@@ -22,65 +29,27 @@ const { cardData, type } = defineProps<IProps>()
     <template v-if="type === 'moment'">
       <div class="card-content py-1">
         <div class="content-text">
-          <van-text-ellipsis
-            :content="cardData?.content?.desc"
-            rows="5"
-            expand-text="展开"
-            @click.stop
-            collapse-text="收起"
-          />
+          <van-text-ellipsis :content="cardData?.content?.desc" rows="5" expand-text="展开" @click.stop
+            collapse-text="收起" />
         </div>
         <div class="content-resource my-2 columns-2 flex-wrap">
-          <template
-            v-for="img in cardData?.content?.images"
-            :key="img.image_id"
-          >
-            <van-image
-              class="w-full aspect-square rounded-lg"
-              round
-              :radius="8"
-              fit="cover"
-              :src="img.image_url"
-            />
+          <template v-for="img in cardData?.content?.images" :key="img.image_id">
+            <van-image class="w-full aspect-square rounded-lg" round :radius="8" fit="cover" :src="img.image_url" />
           </template>
         </div>
       </div>
       <div class="card-bottom flex">
-        <div
-          class="flex-none"
-          @click.stop="$emit('clickComment')"
-        >
-          <van-icon
-            name="chat-o"
-            class="text-gray-500"
-          />
+        <div class="flex-none" @click.stop="$emit('clickComment')">
+          <van-icon name="chat-o" class="text-gray-500" />
           <span class="text-gray-500 ml-1">{{ cardData?.commentCount }}</span>
         </div>
-        <div
-          class="flex-none"
-          @click.stop="$emit('clickLike')"
-        >
-          <van-icon
-            v-if="!cardData.isLike"
-            name="good-job-o"
-            class="text-gray-500 ml-2"
-          />
-          <van-icon
-            v-else
-            name="good-job"
-            class="text-gray-500 ml-2"
-            :color="'#1989fa'"
-          />
+        <div class="flex-none" @click.stop="$emit('clickLike')">
+          <van-icon v-if="!cardData.isLike" name="good-job-o" class="text-gray-500 ml-2" />
+          <van-icon v-else name="good-job" class="text-gray-500 ml-2" :color="'#1989fa'" />
           <span class="text-gray-500 ml-1">{{ cardData?.likeCount }}</span>
         </div>
-        <div
-          class="flex-1 text-right"
-          @click.stop="$emit('clickShare')"
-        >
-          <van-icon
-            name="share-o"
-            class="text-gray-500 ml-2"
-          />
+        <div class="flex-1 text-right" @click.stop="$emit('clickShare')">
+          <van-icon name="share-o" class="text-gray-500 ml-2" />
         </div>
       </div>
     </template>

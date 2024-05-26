@@ -11,7 +11,9 @@ import {
   getTeamMembers,
   getMomentPostComments,
   getMomentPostLikes,
-  likeMomentPost
+  likeMomentPost,
+  deleteMomentRequest,
+  deletePostRequest
 } from '@/api/post'
 import type { MomentCardData } from '@/components/momentsactivitycard/types'
 import type { GroupCardData } from '@/components/groupcard/types'
@@ -19,7 +21,7 @@ import { SHAREOPTIONS } from '@/config/index'
 import { watch } from 'vue'
 import { debounce } from 'lodash'
 import { storeToRefs } from 'pinia'
-import { showToast } from 'vant'
+import { showConfirmDialog, showDialog, showToast } from 'vant'
 import CommentPlane from '@/components/commentplane/CommentPlane.vue'
 
 onActivated(() => {
@@ -120,15 +122,16 @@ const getMomentLikes = async (post_id: number) => {
   likeUsers[post_id] = res.data
 }
 /** 获取我的发布 */
-const getMyPublish = async (user_id: number, page: number = 1, limit: number = 10) => {
+const getMyPublish = async (user_id: number, page: number = 1, limit: number = 100) => {
   let res = await getUserPublish({ user_id, page, limit })
 
   // 等待所有异步操作完成，再处理返回的数据
   const publichList: any[] = res.data.list.map(async (item: any) => {
     if (item.post_id) {
       const joinMans = await getGroupPeoples(item.post_id) // 等待异步操作完成
-      const gropCardData: GroupCardData = {
+      const gropCardData: GroupCardData & { status: number } = {
         card_id: item.post_id,
+        status: item.status,
         userInfo: {
           user_id: userInfo?.value!.user_id ?? 0,
           nickname: userInfo?.value!.nickname ?? 'Unkonw',
@@ -150,8 +153,9 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
       const isLike = likeUsers[item.dynamic_post_id].some(
         (item: any) => item.user_id === userInfo?.value!.user_id
       )
-      const momentCardData: MomentCardData = {
+      const momentCardData: MomentCardData & { status: number } = {
         card_id: item.dynamic_post_id,
+        status: item.status,
         userInfo: {
           user_id: userInfo?.value!.user_id ?? 0,
           nickname: userInfo?.value!.nickname ?? 'Unknow',
@@ -174,6 +178,13 @@ const getMyPublish = async (user_id: number, page: number = 1, limit: number = 1
 
   // 等待所有异步操作完成后，将结果添加到 cardData 中
   const resolvedPublichList = await Promise.all(publichList)
+  // 按时间排序
+  resolvedPublichList.sort((a, b) => {
+    return (
+      new Date(b.data.createTime).getTime() -
+      new Date(a.data.createTime).getTime()
+    )
+  })
   cardData.value = resolvedPublichList
 }
 
@@ -259,11 +270,39 @@ const handleCardClick = (postId: number, postType: 'moment' | 'group') => {
   }
 }
 // 删除
-const handleDeletePost = (postId: number, postType: 'moment' | 'group') => {
+const handleDeletePost = async (postId: number, postType: 'moment' | 'group') => {
   if (postType === 'moment') {
-    confirm('确认删除吗')
+    showConfirmDialog({
+      title: '提示',
+      message: '确定删除该动态吗？',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
+    }).then(async () => {
+      await deleteMomentRequest({ ids: [postId] })
+      showToast('删除成功')
+      cardData.value.forEach((item: any, index: number) => {
+        if (item.data.card_id === postId) {
+          cardData.value.splice(index, 1)
+        }
+      })
+    })
+
   } else if (postType === 'group') {
-    confirm('确认删除吗')
+    showConfirmDialog({
+      title: '提示',
+      message: '确定删除该帖子吗？',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
+    }).then(async () => {
+      await deletePostRequest({ ids: [postId] })
+      showToast('删除成功')
+      cardData.value.forEach((item: any, index: number) => {
+        if (item.data.card_id === postId) {
+          cardData.value.splice(index, 1)
+        }
+
+      })
+    })
   }
 }
 // 去编辑
@@ -280,58 +319,28 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
     <div class="fixed z-50 top-0 w-full h-10 py-2 bg-transparent">
       <div class="flex justify-between">
         <!-- 客服 -->
-        <div
-          class="bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center"
-        >
-          <van-icon
-            @click="handleConnectService"
-            class="mx-2"
-            color="#fff"
-            name="service-o"
-            size="30"
-          />
+        <div class="bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+          <van-icon @click="handleConnectService" class="mx-2" color="#fff" name="service-o" size="30" />
         </div>
         <!-- 分享图标 -->
-        <div
-          class="bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center"
-        >
-          <van-icon
-            @click="handleTopShare"
-            class="mx-2"
-            color="#fff"
-            name="share-o"
-            size="30"
-          />
+        <div class="bg-gray-600 bg-opacity-20 m-2 rounded-full w-12 aspect-square flex items-center justify-center">
+          <van-icon @click="handleTopShare" class="mx-2" color="#fff" name="share-o" size="30" />
         </div>
       </div>
-      <van-share-sheet
-        v-model:show="topState.isShow"
-        title="立即分享给好友"
-        :options="topState.shareOptions"
-      />
+      <van-share-sheet v-model:show="topState.isShow" title="立即分享给好友" :options="topState.shareOptions" />
     </div>
-    <div
-      class="up-bg-img w-full -z-10"
-      style="height: 50vh"
-    >
-      <img
-        class="w-full h-full object-cover"
+    <div class="up-bg-img w-full -z-10" style="height: 50vh">
+      <img class="w-full h-full object-cover"
         src="https://img.pconline.com.cn/images/upload/upc/tx/photoblog/1407/12/c4/36240468_36240468_1405175533420_mthumb.jpg"
-        alt="backgrond img"
-      />
+        alt="backgrond img" />
     </div>
 
     <div class="down-content p-4 -translate-y-12">
       <div class="card-profile rounded-lg bg-white">
         <div class="profile-top flex flex-row-reverse w-full p-2">
           <div
-            class="-translate-y-8 flex flex-none justify-center items-center w-16 h-16 rounded-full bg-white shadow-lg"
-          >
-            <img
-              class="w-4/5 h-4/5 rounded-full"
-              :src="userInfo?.avatar_url"
-              alt="avatar"
-            />
+            class="-translate-y-8 flex flex-none justify-center items-center w-16 h-16 rounded-full bg-white shadow-lg">
+            <img class="w-4/5 h-4/5 rounded-full" :src="userInfo?.avatar_url" alt="avatar" />
           </div>
           <BlankSpaceBox class="flex-1" />
           <div class="flex-none">
@@ -347,20 +356,9 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
             </div>
             <!-- 标签 -->
 
-            <template
-              v-for="tag in tags"
-              :key="tag.id"
-            >
-              <van-tag
-                class="mx-1"
-                round
-                color="#ffe1e1"
-                text-color="#ad0000"
-              >
-                <span
-                  class="h-4 text-center"
-                  style="font-size: 8px"
-                >
+            <template v-for="tag in tags" :key="tag.id">
+              <van-tag class="mx-1" round color="#ffe1e1" text-color="#ad0000">
+                <span class="h-4 text-center" style="font-size: 8px">
                   {{ tag.tag_name }}
                 </span>
               </van-tag>
@@ -377,24 +375,15 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
               天
             </span>
             <div class="flex flex-none items-center">
-              <div
-                @click="router.push('/follow')"
-                class="flex flex-col items-center flex-none mx-2"
-              >
+              <div @click="router.push('/follow')" class="flex flex-col items-center flex-none mx-2">
                 <div class="text-sm">{{ myFansAndFollowsAndLikesCount.followCount }}</div>
                 <div class="text-xs">关注</div>
               </div>
-              <div
-                @click="router.push('/fans')"
-                class="flex flex-col items-center flex-none mx-2"
-              >
+              <div @click="router.push('/fans')" class="flex flex-col items-center flex-none mx-2">
                 <div class="text-sm">{{ myFansAndFollowsAndLikesCount.fansCount }}</div>
                 <div class="text-xs">粉丝</div>
               </div>
-              <div
-                @click="router.push('/like')"
-                class="flex flex-col items-center flex-none mx-2"
-              >
+              <div @click="router.push('/like')" class="flex flex-col items-center flex-none mx-2">
                 <div class="text-sm">{{ myFansAndFollowsAndLikesCount.likeCount }}</div>
                 <div class="text-xs">喜欢</div>
               </div>
@@ -405,92 +394,41 @@ const handleEditPost = (postId: number, postType: 'moment' | 'group') => {
 
       <!-- 我的组队，设置，个人资料 卡片 -->
       <div class="flex justify-around p-2 my-4 rounded-lg bg-white">
-        <div
-          @click="router.push('/myjoinedgroups')"
-          class="flex flex-col justify-center items-center w-20 rounded-sm"
-        >
-          <van-icon
-            name="friends-o"
-            size="30"
-          ></van-icon>
+        <div @click="router.push('/myjoinedgroups')" class="flex flex-col justify-center items-center w-20 rounded-sm">
+          <van-icon name="friends-o" size="30"></van-icon>
           <span class="text-sm text-gray-500"> 我的组队</span>
         </div>
-        <div
-          @click="router.push('/setting')"
-          class="flex flex-col justify-center items-center w-20 rounded-sm"
-        >
-          <van-icon
-            name="setting-o"
-            size="30"
-          />
+        <div @click="router.push('/setting')" class="flex flex-col justify-center items-center w-20 rounded-sm">
+          <van-icon name="setting-o" size="30" />
           <span class="text-sm text-gray-500"> 系统设置</span>
         </div>
-        <div
-          @click="router.push('/editprofile')"
-          class="flex flex-col justify-center items-center w-20 rounded-sm"
-        >
-          <van-icon
-            name="records-o"
-            size="30"
-          />
+        <div @click="router.push('/editprofile')" class="flex flex-col justify-center items-center w-20 rounded-sm">
+          <van-icon name="records-o" size="30" />
           <span class="text-sm text-gray-500">个人资料</span>
         </div>
       </div>
       <div>
         <h4 class="text-gray-500 text-sm">我的发布</h4>
-        <van-empty
-          class="my-4"
-          v-if="!cardData.length"
-          description="未发布任何内容"
-        />
-        <template
-          v-for="moment in cardData"
-          :key="moment.id"
-        >
-          <PublishCard
-            class="my-4"
-            :card-data="moment.data"
-            :type="moment.type"
+        <van-empty class="my-4" v-if="!cardData.length" description="未发布任何内容" />
+        <template v-for="moment in cardData" :key="moment.id">
+          <PublishCard class="my-4" :card-data="moment.data" :type="moment.type"
             @click="() => handleCardClick(moment.data.card_id, moment.type)"
-            @click-like="() => handleClickLike(moment.data.card_id)"
-            @click-share="handleShare"
-            @click-comment="() => handleClickMomment(moment.data.card_id)"
-          >
+            @click-like="() => handleClickLike(moment.data.card_id)" @click-share="handleShare"
+            @click-comment="() => handleClickMomment(moment.data.card_id)">
             <template #edit>
-              <van-icon
-                class="m-2 shadow-md rounded-md"
-                name="delete-o"
-                size="25"
-                @click.stop="() => handleDeletePost(moment.data.card_id, moment.type)"
-              />
-              <van-icon
-                class="m-2 shadow-md rounded-md"
-                name="edit"
-                size="25"
-                @click.stop="() => handleEditPost(moment.data.card_id, moment.type)"
-              />
+              <van-icon class="m-2 shadow-md rounded-md" name="delete-o" size="25"
+                @click.stop="() => handleDeletePost(moment.data.card_id, moment.type)" />
+              <van-icon class="m-2 shadow-md rounded-md" name="edit" size="25"
+                @click.stop="() => handleEditPost(moment.data.card_id, moment.type)" />
             </template>
           </PublishCard>
         </template>
       </div>
-      <van-share-sheet
-        v-model:show="cardShare.isShow"
-        title="立即分享给好友"
-        :options="cardShare.shareOptions"
-      />
+      <van-share-sheet v-model:show="cardShare.isShow" title="立即分享给好友" :options="cardShare.shareOptions" />
     </div>
-    <van-action-sheet
-      class="h-screen"
-      v-model:show="commemtPlaneShow"
-      title="评论"
-    >
-      <CommentPlane
-        v-model:loading="commentState.loading"
-        v-model:finished="commentState.finished"
-        v-model:error="commentState.error"
-        :comment-list="commentList"
-        :handle-comment-on-load="handleCommentOnLoad"
-      />
+    <van-action-sheet class="h-screen" v-model:show="commemtPlaneShow" title="评论">
+      <CommentPlane v-model:loading="commentState.loading" v-model:finished="commentState.finished"
+        v-model:error="commentState.error" :comment-list="commentList" :handle-comment-on-load="handleCommentOnLoad" />
     </van-action-sheet>
   </main>
 </template>

@@ -200,6 +200,7 @@ const onRefresh = async () => {
           :key="chatRecord.id"
         >
           <MessageCard
+            :user_id="chatRecord.user_info.user_id"
             :is-send="chatRecord.isSender"
             :content="chatRecord.content"
             :name="chatRecord.user_info.nickname"

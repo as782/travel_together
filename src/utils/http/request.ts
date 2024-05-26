@@ -45,8 +45,6 @@ service.interceptors.response.use(
       code: error.response.status,
       msg: error.response.statusText
     }
-    console.log('HTTP 网络错误', error.response)
-
     switch (code) {
       case 401:
         message = msg

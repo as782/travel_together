@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 interface IProps {
+  user_id?: number
   name?: string
   avatar?: string
   content?: string
@@ -10,7 +11,7 @@ interface IProps {
   isShowName?: boolean
 }
 // 判断是接收还是发送决定添加不同样式
-const { name, avatar, content, isSend, isShowName } = defineProps<IProps>()
+const { user_id,name, avatar, content, isSend, isShowName } = defineProps<IProps>()
 
 const classname = computed(() => {
   return {
@@ -35,6 +36,7 @@ const classnamePop = computed(() => {
         class="w-10 h-10 aspect-square rounded-md mx-1"
         fit="cover"
         :src="avatar"
+        @click="$router.push('/user/'+user_id)"
       />
       <div class="flex flex-col justify-end">
         <div

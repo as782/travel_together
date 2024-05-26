@@ -79,14 +79,24 @@ export const modifyTeamPost = (data: UpdateGroupParams) => {
   return http.post<Result<any>>('/post/updateTeamPost', data)
 }
 
-/** 删除动态 */
-export const deleteMomentPost = (postId: number) => {
-  return http.post<Result<any>>(`/post/deleteDynamicPost/`, { dynamic_post_id: postId })
+// /** 删除动态 */
+// export const deleteMomentPost = (postId: number) => {
+//   return http.post<Result<any>>(`/post/deleteDynamicPost/`, { dynamic_post_id: postId })
+// }
+
+// /** 删除组队 */
+// export const deleteTeamPost = (postId: number) => {
+//   return http.post<Result<any>>(`/post/deleteTeamPost/`, { post_id: postId })
+// }
+
+/** 删除组队帖 */
+export const deletePostRequest = async (data: { ids: number[] }) => {
+  return http.post<Result<any>>('/admin/deletePost', data)
 }
 
-/** 删除组队 */
-export const deleteTeamPost = (postId: number) => {
-  return http.post<Result<any>>(`/post/deleteTeamPost/`, { post_id: postId })
+/** 删除动态帖 */
+export const deleteMomentRequest = async (data: { ids: number[] }) => {
+  return http.post<Result<any>>('/admin/deleteDynamicPost', data)
 }
 
 /** 获取首页推荐 */

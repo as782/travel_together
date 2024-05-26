@@ -15,7 +15,6 @@ const resetForm = () => {
 }
 
 const onSubmit = async (values: any) => {
-  console.log('submit', values)
   buttonLoading.value = true
   // 登录逻辑
   try {

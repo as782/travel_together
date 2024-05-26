@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { USER_PROTOCOL, privacyPolicy } from '@/config';
+import videoSrc from '../../../public/loginBgvideo.mp4'
 import { showDialog, showToast } from 'vant'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -43,7 +44,7 @@ const handleAgreement1  =()=>{
   <div class="container-box bg-red-300 h-screen">
     <video
       class="video-background"
-      src="../../../public/loginBgVideo.mp4"
+      :src="videoSrc"
       preload="auto"
       loop
       autoplay

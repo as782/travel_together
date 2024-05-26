@@ -1,0 +1,1 @@
+import{i as r,B as s,w as e,L as c,o as _,b as f,aG as a,N as i}from"./index-Al1ESLyH.js";const l={};function d(o,p){const t=i,n=c;return _(),s(n,null,{default:e(()=>[f(t,{fixed:"","z-index":999},{left:e(()=>[a(o.$slots,"left")]),right:e(()=>[a(o.$slots,"right")]),default:e(()=>[a(o.$slots,"default")]),_:3})]),_:3})}const u=r(l,[["render",d]]);export{u as T};

@@ -1,0 +1,1 @@
+import{n as o}from"./index-Bc0MyXRq.js";import{az as a,r as n}from"./index-Al1ESLyH.js";const i=a("themes",()=>{const t=n([]);function r(e){t.value=e}async function s(){try{const e=await o();e.data&&r(e.data)}catch(e){console.error("获取主题列表失败",e)}}return{themes:t,getThemes:s,setThemes:r}},{persist:!0});export{i as u};

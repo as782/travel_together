@@ -39,6 +39,11 @@ export const updateUserInfo = (data: any) => {
   return http.post<Result>('/users/update', data)
 }
 
+/** 修改密码 */
+export const changeUserPassword = (data: any) => {
+  return http.post<any>('/users/changePassword', data)
+}
+
 /** 获取用户信息 */
 export const getUserInfo = (userId: number) => {
   return http.get<Result<UserInfo>>(`/users/getUserInfo/${userId}`, {

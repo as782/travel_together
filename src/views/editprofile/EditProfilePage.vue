@@ -69,7 +69,7 @@ const datePick = {
   minData: new Date(1980, 1, 1),
   maxData: new Date()
 }
-const dateData = ref<string>(form.birthday.substring(0, 10))
+const dateData = ref<string>(form.birthday?form.birthday.substring(0, 10):'')
 const onConfirmCalendar = (date: any) => {
   dateData.value = date.selectedValues.join('-')
   const isoStr = new Date(date.selectedValues.join('-')).toISOString()

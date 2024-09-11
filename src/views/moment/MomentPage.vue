@@ -276,7 +276,7 @@ const handleClickMomment = async (post_id: number) => {
     <van-tabs v-model:active="activeTab" animated :show-header="false">
       <template v-for="tabname in tabs" :key="tabname">
         <van-tab :name="tabname">
-          <van-list v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"
+          <van-list v-model:loading="listState.loading" :finished="listState.finished" finished-text="没有更多了"  class="p-1 sm:columns-2 lg:columns-2 xl:columns-4"
             v-model:error="listState.error" error-text="请求失败，点击重新加载" @load="listOnloadHandle">
             <template v-for="moment in cardDataList" :key="moment.card_id">
               <MomentsActivityCard class="my-2" :moment-data="moment" @click="() => handleCardClick(moment.card_id)"
